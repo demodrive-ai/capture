@@ -685,30 +685,39 @@ const Recorder = () => {
   // Add this new function to export tracking data
   async function exportTrackingData() {
     try {
-      // Get tracking data from background script
-      const { trackingData } = await chrome.storage.local.get(['trackingData']);
-      
-      // Get all data from different stores
-      const [metadata, chunks] = await Promise.all([
-        metadataTracker.current?.getRecordingMetadata(),
-        getAllChunks()
+      // Get tracking data directly from chrome.storage.local
+      const { cursorEvents, cursorEventCounts, totalCursorEvents, metadata } = await chrome.storage.local.get([
+        'cursorEvents',
+        'cursorEventCounts',
+        'totalCursorEvents',
+        'metadata'
       ]);
+      
+      // Get video chunks metadata
+      const chunks = await getAllChunks();
 
       // Create a complete tracking data object
       const exportData = {
         metadata: {
           ...metadata,
           totalChunks: chunks.length,
-          totalCursorEvents: trackingData?.cursorEvents?.length || 0,
+          totalCursorEvents: totalCursorEvents || 0,
+          cursorEventCounts: cursorEventCounts || {},
           exportTime: new Date().toISOString()
         },
-        cursorEvents: trackingData?.cursorEvents || [],
+        cursorEvents: cursorEvents || [],
         chunksMetadata: chunks.map(chunk => ({
           index: chunk.index,
           timestamp: chunk.timestamp,
           size: chunk.chunk?.size || 0
         }))
       };
+
+      console.log('Exporting tracking data:', {
+        totalChunks: chunks.length,
+        totalCursorEvents,
+        eventCounts: cursorEventCounts
+      });
 
       // Convert to JSON and create blob
       const jsonBlob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -723,7 +732,6 @@ const Recorder = () => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      console.log('Exported tracking data:', exportData);
       return exportData;
     } catch (err) {
       console.error('Error exporting tracking data:', err);

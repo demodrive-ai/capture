@@ -9,3 +9,5 @@ node_modules/
 node_modules
 build/*
 build/**/*
+
+cursor_events_*.json
