@@ -104,6 +104,29 @@ const startRecording = async () => {
     recording: true,
   });
 
+  // Get the active tab
+  const { activeTab } = await chrome.storage.local.get(["activeTab"]);
+  
+  // Inject tracking script into the active tab
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId: activeTab },
+      files: ['tracking.bundle.js']
+    });
+    console.log('[Background] Injected tracking script');
+    
+    // Start tracking
+    chrome.tabs.sendMessage(activeTab, { type: 'start-recording' }, (response) => {
+      if (response && response.success) {
+        console.log('[Background] Tracking started successfully');
+      } else {
+        console.error('[Background] Failed to start tracking:', response?.error);
+      }
+    });
+  } catch (err) {
+    console.error('[Background] Failed to inject tracking script:', err);
+  }
+
   // Check if customRegion is set
   const { customRegion } = await chrome.storage.local.get(["customRegion"]);
 
@@ -455,6 +478,20 @@ const stopRecording = async () => {
   ]);
   let duration = Date.now() - recordingStartTime;
   const maxDuration = 7 * 60 * 1000;
+
+  // Get the active tab and stop tracking
+  const { activeTab } = await chrome.storage.local.get(["activeTab"]);
+  try {
+    chrome.tabs.sendMessage(activeTab, { type: 'stop-recording' }, (response) => {
+      if (response && response.success) {
+        console.log('[Background] Tracking stopped successfully');
+      } else {
+        console.error('[Background] Failed to stop tracking:', response?.error);
+      }
+    });
+  } catch (err) {
+    console.error('[Background] Failed to stop tracking:', err);
+  }
 
   if (recordingStartTime === 0) {
     duration = 0;
@@ -1574,6 +1611,42 @@ const checkAvailableMemory = (sendResponse) => {
   });
 };
 
+const handleExportTrackingData = async (request) => {
+  try {
+    // Get tracking data from storage
+    const { trackingData } = await chrome.storage.local.get(['trackingData']);
+    
+    if (!trackingData) {
+      console.warn('No tracking data found');
+      return;
+    }
+
+    // Create export data with timestamp
+    const exportData = {
+      timestamp: new Date().toISOString(),
+      ...trackingData
+    };
+
+    // Convert to blob and create download
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    // Trigger download
+    const filename = `screenity-tracking-data-${new Date().toISOString()}.json`;
+    await chrome.downloads.download({
+      url: url,
+      filename: filename,
+      saveAs: true
+    });
+
+    // Cleanup
+    URL.revokeObjectURL(url);
+    await chrome.storage.local.remove(['trackingData']);
+  } catch (err) {
+    console.error('Error exporting tracking data:', err);
+  }
+};
+
 // Listen for messages
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === "desktop-capture") {
@@ -1755,6 +1828,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     );
   } else if (request.type === "add-alarm-listener") {
     addAlarmListener();
+  } else if (request.type === 'tracking-data') {
+    console.log('[Background] Received tracking data:', request.data);
+    // Store tracking data in local storage for later use
+    chrome.storage.local.set({
+      trackingData: request.data
+    });
+  } else if (request.type === "export-tracking-data") {
+    handleExportTrackingData(request);
+    return true;
   }
 });
 

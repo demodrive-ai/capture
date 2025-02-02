@@ -1,22 +1,8 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import "./styles/app.scss";
-import Content from "./Content";
-import { printLine } from './modules/print';
+// Content script for cursor tracking
 import CursorTracker from './trackers/CursorTracker';
 import MetadataTracker from './trackers/MetadataTracker';
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-  <React>
-    <Content />
-  </React>
-);
-
-console.log('Content script works!');
-console.log('Must reload extension for modifications to take effect');
-
-console.log('[Content] Script loaded and initialized');
+console.log('[Tracking] Content script loaded and initialized');
 
 // Initialize trackers
 let cursorTracker = null;
@@ -24,10 +10,10 @@ let metadataTracker = null;
 
 // Listen for messages from the extension
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('[Content] Received message:', request.type);
+  console.log('[Tracking] Received message:', request.type);
   
   if (request.type === 'start-recording') {
-    console.log('[Content] Initializing trackers for recording');
+    console.log('[Tracking] Initializing trackers for recording');
     try {
       // Initialize trackers when recording starts
       cursorTracker = new CursorTracker();
@@ -37,14 +23,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       cursorTracker.startTracking();
       metadataTracker.startTracking();
       
-      console.log('[Content] Successfully started tracking');
+      console.log('[Tracking] Successfully started tracking');
       sendResponse({ success: true });
     } catch (err) {
-      console.error('[Content] Error starting tracking:', err);
+      console.error('[Tracking] Error starting tracking:', err);
       sendResponse({ success: false, error: err.message });
     }
   } else if (request.type === 'stop-recording') {
-    console.log('[Content] Stopping recording and collecting tracking data');
+    console.log('[Tracking] Stopping recording and collecting tracking data');
     try {
       // Stop tracking when recording ends
       if (cursorTracker) {
@@ -59,7 +45,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         cursorTracker?.getAllEvents(),
         metadataTracker?.getRecordingMetadata()
       ]).then(([cursorEvents, metadata]) => {
-        console.log('[Content] Collected tracking data:', {
+        console.log('[Tracking] Collected tracking data:', {
           cursorEventsCount: cursorEvents?.length || 0,
           hasMetadata: !!metadata
         });
@@ -74,16 +60,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
       });
       
-      console.log('[Content] Successfully stopped tracking');
+      console.log('[Tracking] Successfully stopped tracking');
       sendResponse({ success: true });
     } catch (err) {
-      console.error('[Content] Error stopping tracking:', err);
+      console.error('[Tracking] Error stopping tracking:', err);
       sendResponse({ success: false, error: err.message });
     }
   }
   
   // Return true to indicate we'll send a response asynchronously
   return true;
-});
-
-printLine("Using the 'printLine' function from the Print Module");
+}); 
