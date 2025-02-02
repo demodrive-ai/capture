@@ -41,6 +41,7 @@ var options = {
   entry: {
     background: path.join(__dirname, "src", "pages", "Background", "index.js"),
     contentScript: path.join(__dirname, "src", "pages", "Content", "index.jsx"),
+    tracking: path.join(__dirname, "src", "pages", "Content", "tracking.js"),
     recorder: path.join(__dirname, "src", "pages", "Recorder", "index.jsx"),
     recorderoffscreen: path.join(
       __dirname,
