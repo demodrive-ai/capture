@@ -8,6 +8,29 @@ console.log('[Tracking] Content script loaded and initialized');
 let cursorTracker = null;
 let metadataTracker = null;
 
+// Initialize tracking immediately if we're in a recording session
+chrome.storage.local.get(['recording'], (result) => {
+  if (result.recording) {
+    initializeTracking();
+  }
+});
+
+function initializeTracking() {
+  try {
+    console.log('[Tracking] Initializing trackers');
+    cursorTracker = new CursorTracker();
+    metadataTracker = new MetadataTracker();
+    
+    // Start tracking immediately
+    cursorTracker.startTracking();
+    metadataTracker.startTracking();
+    
+    console.log('[Tracking] Trackers initialized and started');
+  } catch (err) {
+    console.error('[Tracking] Error initializing trackers:', err);
+  }
+}
+
 // Listen for messages from the extension
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('[Tracking] Received message:', request.type);
@@ -15,13 +38,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'start-recording') {
     console.log('[Tracking] Initializing trackers for recording');
     try {
-      // Initialize trackers when recording starts
-      cursorTracker = new CursorTracker();
-      metadataTracker = new MetadataTracker();
-      
-      // Start tracking
-      cursorTracker.startTracking();
-      metadataTracker.startTracking();
+      if (!cursorTracker) {
+        initializeTracking();
+      } else {
+        cursorTracker.startTracking();
+        metadataTracker?.startTracking();
+      }
       
       console.log('[Tracking] Successfully started tracking');
       sendResponse({ success: true });
@@ -66,8 +88,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       console.error('[Tracking] Error stopping tracking:', err);
       sendResponse({ success: false, error: err.message });
     }
+  } else if (request.type === 'check-tracking-status') {
+    // Respond with current tracking status
+    sendResponse({
+      isTracking: cursorTracker?.isTracking || false,
+      hasTrackers: !!cursorTracker
+    });
   }
   
-  // Return true to indicate we'll send a response asynchronously
-  return true;
+  return true; // Keep message channel open for async response
 }); 

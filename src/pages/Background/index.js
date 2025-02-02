@@ -9,6 +9,7 @@ import {
 } from "./modules/tabHelper";
 
 import localforage from "localforage";
+import * as cursorTrackingManager from './modules/cursorTrackingManager';
 
 localforage.config({
   driver: localforage.INDEXEDDB,
@@ -123,8 +124,14 @@ const startRecording = async () => {
         console.error('[Background] Failed to start tracking:', response?.error);
       }
     });
+
+    // Get the current window
+    const currentWindow = await chrome.windows.getCurrent();
+    
+    // Start cursor tracking for the window
+    await cursorTrackingManager.startWindowTracking(currentWindow.id);
   } catch (err) {
-    console.error('[Background] Failed to inject tracking script:', err);
+    console.error('Error starting recording:', err);
   }
 
   // Check if customRegion is set
@@ -287,6 +294,9 @@ const onActivated = async (activeInfo) => {
       sendMessageTab(activeInfo.tabId, { type: "time", time: time });
     }
   }
+
+  // Handle cursor tracking for the new active tab
+  await cursorTrackingManager.handleTabActivated(activeInfo.tabId);
 };
 
 chrome.windows.onFocusChanged.addListener(async (windowId) => {
@@ -362,6 +372,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     ) {
       sendMessageTab(tab.id, { type: "toggle-popup" });
     }
+
+    // Handle cursor tracking for updated tabs
+    await cursorTrackingManager.handleTabUpdated(tabId, changeInfo, tab);
   }
 });
 
@@ -560,6 +573,19 @@ const stopRecording = async () => {
   chrome.alarms.clear("recording-alarm");
 
   discardOffscreenDocuments();
+
+  // Stop cursor tracking and get events
+  const cursorEvents = await cursorTrackingManager.stopWindowTracking();
+  
+  // Store cursor events
+  await chrome.storage.local.set({
+    cursorEvents,
+    cursorEventCounts: cursorEvents.reduce((acc, event) => {
+      acc[event.type] = (acc[event.type] || 0) + 1;
+      return acc;
+    }, {}),
+    totalCursorEvents: cursorEvents.length
+  });
 };
 
 const forceProcessing = async () => {
@@ -1837,6 +1863,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.type === "export-tracking-data") {
     handleExportTrackingData(request);
     return true;
+  } else if (request.type === 'cursor-event') {
+    cursorTrackingManager.handleCursorEvent(sender.tab.id, request.data);
+  } else if (request.type === 'cursor-tracker-tab-info') {
+    // Store tab info for enriching cursor events
+    chrome.storage.local.set({
+      [`tab_info_${sender.tab.id}`]: request.data
+    });
   }
 });
 

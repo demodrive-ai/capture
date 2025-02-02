@@ -18,6 +18,50 @@ class CursorTracker {
     
     // Set default streaming endpoint
     this.streamEndpoint = 'http://localhost:8000/streaming-events';
+
+    // Get current tab information
+    this.getCurrentTabInfo();
+
+    // Listen for messages from background script
+    this.setupMessageListener();
+  }
+
+  setupMessageListener() {
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.type === 'start-recording') {
+        this.startTracking();
+        sendResponse({ success: true });
+      } else if (request.type === 'stop-recording') {
+        this.stopTracking();
+        sendResponse({ success: true });
+      }
+      return true; // Keep message channel open for async response
+    });
+  }
+
+  async getCurrentTabInfo() {
+    try {
+      // Get current tab URL and title
+      this.currentUrl = window.location.href;
+      this.currentTitle = document.title;
+
+      // Send tab info to background script
+      chrome.runtime.sendMessage({
+        type: 'cursor-tracker-tab-info',
+        data: {
+          url: this.currentUrl,
+          title: this.currentTitle,
+          timestamp: Date.now()
+        }
+      });
+
+      console.log('[CursorTracker] Updated tab info:', {
+        url: this.currentUrl,
+        title: this.currentTitle
+      });
+    } catch (err) {
+      console.error('[CursorTracker] Error getting tab info:', err);
+    }
   }
 
   async startTracking() {
@@ -29,11 +73,60 @@ class CursorTracker {
       this.currentBatch = [];
       this.currentBatchIndex = 0;
       this.events = [];
+      
+      // Get initial tab info
+      await this.getCurrentTabInfo();
+      
       this.attachEventListeners();
       console.log('[CursorTracker] Event listeners attached');
+
+      // Listen for URL changes
+      this.setupUrlChangeListener();
+
+      // Send ready message to background script
+      chrome.runtime.sendMessage({
+        type: 'cursor-tracker-ready',
+        data: {
+          url: this.currentUrl,
+          title: this.currentTitle
+        }
+      });
     } catch (err) {
       console.error('[CursorTracker] Error starting cursor tracking:', err);
     }
+  }
+
+  setupUrlChangeListener() {
+    // Listen for URL changes using the History API
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+    
+    history.pushState = (...args) => {
+      originalPushState.apply(history, args);
+      this.getCurrentTabInfo();
+    };
+    
+    history.replaceState = (...args) => {
+      originalReplaceState.apply(history, args);
+      this.getCurrentTabInfo();
+    };
+    
+    // Listen for regular navigation
+    window.addEventListener('popstate', () => {
+      this.getCurrentTabInfo();
+    });
+
+    // Listen for URL changes via MutationObserver
+    const observer = new MutationObserver(() => {
+      if (this.currentUrl !== window.location.href) {
+        this.getCurrentTabInfo();
+      }
+    });
+
+    observer.observe(document, {
+      subtree: true,
+      childList: true
+    });
   }
 
   async stopTracking() {
@@ -80,6 +173,7 @@ class CursorTracker {
 
   attachEventListeners() {
     console.log('[CursorTracker] Attaching event listeners');
+    
     // Bind the event handlers to this instance
     this.boundMouseMove = this.handleMouseMoveThrottled.bind(this);
     this.boundClick = this.handleClick.bind(this);
@@ -87,6 +181,7 @@ class CursorTracker {
     this.boundMouseUp = this.handleMouseUp.bind(this);
     this.boundWheel = this.handleWheel.bind(this);
     this.boundContextMenu = this.handleContextMenu.bind(this);
+    this.boundScroll = this.handleScroll.bind(this);
 
     // Add event listeners with capture phase to ensure we get all events
     document.addEventListener('mousemove', this.boundMouseMove, { capture: true });
@@ -95,6 +190,7 @@ class CursorTracker {
     document.addEventListener('mouseup', this.boundMouseUp, { capture: true });
     document.addEventListener('wheel', this.boundWheel, { capture: true });
     document.addEventListener('contextmenu', this.boundContextMenu, { capture: true });
+    document.addEventListener('scroll', this.boundScroll, { capture: true });
     
     console.log('[CursorTracker] Event listeners attached with capture phase');
   }
@@ -107,6 +203,17 @@ class CursorTracker {
     document.removeEventListener('mouseup', this.boundMouseUp, { capture: true });
     document.removeEventListener('wheel', this.boundWheel, { capture: true });
     document.removeEventListener('contextmenu', this.boundContextMenu, { capture: true });
+    document.removeEventListener('scroll', this.boundScroll, { capture: true });
+  }
+
+  handleScroll = (e) => {
+    if (!this.isTracking) return;
+    this.addEvent({
+      t: Date.now(),
+      type: 'scroll',
+      scrollX: window.scrollX,
+      scrollY: window.scrollY
+    });
   }
 
   handleMouseMoveThrottled = (e) => {
@@ -274,9 +381,29 @@ class CursorTracker {
     try {
       if (!this.isTracking) return;
       
+      // Enrich event with tab information
+      const enrichedEvent = {
+        ...event,
+        url: this.currentUrl,
+        title: this.currentTitle,
+        viewport: {
+          width: window.innerWidth,
+          height: window.innerHeight,
+          scrollX: window.scrollX,
+          scrollY: window.scrollY
+        },
+        timestamp: Date.now()
+      };
+      
       // Add to in-memory array
-      this.events.push(event);
-      this.currentBatch.push(event);
+      this.events.push(enrichedEvent);
+      this.currentBatch.push(enrichedEvent);
+      
+      // Send event to background script immediately
+      chrome.runtime.sendMessage({
+        type: 'cursor-event',
+        data: enrichedEvent
+      });
       
       console.log(`[CursorTracker] Added ${event.type} event at (${event.x}, ${event.y}), total events: ${this.events.length}`);
       
