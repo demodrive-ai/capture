@@ -11,3 +11,5 @@ build/*
 build/**/*
 
 cursor_events_*.json
+gapi.json
+**/gapi.json
