@@ -1,6 +1,6 @@
 {
   "extName": {
-    "message": "Screenity - 屏幕錄像和標註工具",
+    "message": "capture - 屏幕錄像和標註工具",
     "description": "Extension name"
   },
   "extDesc": {
@@ -48,7 +48,7 @@
     "description": "Camera / microphone permissions warning modal title"
   },
   "permissionsModalDescription": {
-    "message": "看起来Screenity无法访问您的摄像头或麦克风。请确保通过单击地址栏中的摄像头图标允许访问。",
+    "message": "看起来capture无法访问您的摄像头或麦克风。请确保通过单击地址栏中的摄像头图标允许访问。",
     "description": "Camera / microphone permissions warning modal description"
   },
   "permissionsModalDismiss": {
@@ -641,11 +641,11 @@
     "description": "Paused recording modal title"
   },
   "chromePermissionsModalTitle": {
-    "message": "Screenity 没有权限录制您的屏幕",
+    "message": "capture 没有权限录制您的屏幕",
     "description": "Permission modal title"
   },
   "chromePermissionsModalDescription": {
-    "message": "为启用屏幕录制，您必须在提示时授予 Screenity 捕获屏幕的权限。",
+    "message": "为启用屏幕录制，您必须在提示时授予 capture 捕获屏幕的权限。",
     "description": "Permission modal description"
   },
   "chromePermissionsModalAction": {
@@ -673,7 +673,7 @@
     "description": "Microphone muted modal cancel"
   },
   "setupTitle": {
-    "message": "在三个简单步骤中开始使用Screenity：",
+    "message": "在三个简单步骤中开始使用capture：",
     "description": "Set up steps title"
   },
   "setupStep1Before": {
@@ -697,7 +697,7 @@
     "description": "Set up step 3, before the icon. It needs a space at the end."
   },
   "setupStep3After": {
-    "message": " Screenity图标以启动",
+    "message": " capture图标以启动",
     "description": "Set up step 3, after the icon. It needs a space at the beginning."
   },
   "setupCompleteTitle": {
@@ -757,7 +757,7 @@
     "description": "Stop recording button in recording screen"
   },
   "updateAnnouncementTitle": {
-    "message": "歡迎使用新版 Screenity！",
+    "message": "歡迎使用新版 capture！",
     "description": "現有用戶的更新公告標題"
   },
   "updateAnnouncementDescription": {
@@ -777,7 +777,7 @@
     "description": "流錯誤模態框標題"
   },
   "streamErrorModalDescription": {
-    "message": "看起來啟動錄製時出現了錯誤。請重新啟動您的瀏覽器並重試。如果問題仍然存在，請通過 support@screenity.io 與我們聯繫。",
+    "message": "看起來啟動錄製時出現了錯誤。請重新啟動您的瀏覽器並重試。如果問題仍然存在，請通過 support@capture.io 與我們聯繫。",
     "description": "流錯誤模態框描述"
   },
   "highestQuality": {
@@ -829,7 +829,7 @@
     "description": "空間不足標題"
   },
   "notEnoughSpaceDescription": {
-    "message": "Screenity 需要至少 1GB 的空閒空間進行錄製。請釋放設備上的空間並重試。",
+    "message": "capture 需要至少 1GB 的空閒空間進行錄製。請釋放設備上的空間並重試。",
     "description": "空間不足描述"
   },
   "clearSpaceButton": {
@@ -861,7 +861,7 @@
     "description": "原始錄制模態框標題"
   },
   "rawRecordingModalDescription": {
-    "message": "原始視頻文件是由Screenity錄制的原始視頻文件。此視頻未經處理或編輯，因此可能非常大且可能無法在所有設備上播放。如果您在處理後的視頻方面遇到問題，可以使用此文件恢復您的視頻。",
+    "message": "原始視頻文件是由capture錄制的原始視頻文件。此視頻未經處理或編輯，因此可能非常大且可能無法在所有設備上播放。如果您在處理後的視頻方面遇到問題，可以使用此文件恢復您的視頻。",
     "description": "原始錄制模態框描述"
   },
   "rawRecordingModalButton": {
@@ -873,7 +873,7 @@
     "description": "故障排除模態框標題"
   },
   "troubleshootModalDescription": {
-    "message": "下載後，請將文件發送至support@screenity.io，並附上任何相關信息。我們將使用這些數據來幫助您解決擴展程序的任何問題，並在可能的情況下恢復您的視頻。",
+    "message": "下載後，請將文件發送至support@capture.io，並附上任何相關信息。我們將使用這些數據來幫助您解決擴展程序的任何問題，並在可能的情況下恢復您的視頻。",
     "description": "故障排除模態框描述"
   },
   "troubleshootModalButton": {
@@ -885,7 +885,7 @@
     "description": "超過5分鐘限制的模態框標題"
   },
   "overLimitModalDescription": {
-    "message": "由於Screenity完全私密且在本地運行，它受到您設備硬件的限制。處理這樣長度的影片需要很長時間，而且資源消耗很大。但您仍然可以下載WEBM文件或原始錄制文件，但無法進行編輯和MP4導出。儘管如此，如果您了解風險，仍然可以嘗試處理該影片。",
+    "message": "由於capture完全私密且在本地運行，它受到您設備硬件的限制。處理這樣長度的影片需要很長時間，而且資源消耗很大。但您仍然可以下載WEBM文件或原始錄制文件，但無法進行編輯和MP4導出。儘管如此，如果您了解風險，仍然可以嘗試處理該影片。",
     "description": "超過5分鐘限制的模態框描述"
   },
   "overLimitModalButton": {
@@ -929,11 +929,11 @@
     "description": "選項卡上不支援擴展功能的標題"
   },
   "extensionNotSupportedDescription": {
-    "message": "Screenity在您之前的選項卡上不受支援。儘管如此，您可以在此開始錄製，然後切換到選項卡，但您的攝像頭和工具欄將不可見。",
+    "message": "capture在您之前的選項卡上不受支援。儘管如此，您可以在此開始錄製，然後切換到選項卡，但您的攝像頭和工具欄將不可見。",
     "description": "選項卡上不支援擴展功能的說明"
   },
   "backupsTitle": {
-    "message": "為Screenity錄製設定本地備份",
+    "message": "為capture錄製設定本地備份",
     "description": "備份標題"
   },
   "backupsDescription1": {
@@ -969,7 +969,7 @@
     "description": "停止備份按鈕"
   },
   "backupsConfirmTitle": {
-    "message": "請重新確認對Screenity本地備份文件夾的訪問權限",
+    "message": "請重新確認對capture本地備份文件夾的訪問權限",
     "description": "備份確認標題"
   },
   "backupsConfirmDescription": {
@@ -977,7 +977,7 @@
     "description": "備份確認說明"
   },
   "backupsConfirmAllow": {
-    "message": "允許Screenity繼續備份錄製",
+    "message": "允許capture繼續備份錄製",
     "description": "備份確認中的允許按鈕"
   },
   "backupsToggle": {

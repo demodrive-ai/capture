@@ -684,7 +684,7 @@ body {
     transform: translateX(0);
   }
 }
-#screenity-ui [data-radix-popper-content-wrapper] {
+#capture-ui [data-radix-popper-content-wrapper] {
   z-index: 99999999999 !important;
 }
 
@@ -3160,7 +3160,7 @@ button {
     transform: translateX(0);
   }
 }
-#screenity-ui [data-radix-popper-content-wrapper] {
+#capture-ui [data-radix-popper-content-wrapper] {
   z-index: 99999999999 !important;
 }
 
@@ -3840,28 +3840,28 @@ html {
   font-size: 16px;
 }
 
-.screenity-scrollbar::-webkit-scrollbar {
+.capture-scrollbar::-webkit-scrollbar {
   background-color: rgba(0, 0, 0, 0);
   width: 16px;
   height: 16px;
   z-index: 999999;
 }
 
-.screenity-scrollbar::-webkit-scrollbar-track {
+.capture-scrollbar::-webkit-scrollbar-track {
   background-color: rgba(0, 0, 0, 0);
 }
 
-.screenity-scrollbar::-webkit-scrollbar-thumb {
+.capture-scrollbar::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0);
   border-radius: 16px;
   border: 0px solid #fff;
 }
 
-.screenity-scrollbar::-webkit-scrollbar-button {
+.capture-scrollbar::-webkit-scrollbar-button {
   display: none;
 }
 
-.screenity-scrollbar:hover::-webkit-scrollbar-thumb {
+.capture-scrollbar:hover::-webkit-scrollbar-thumb {
   background-color: #a0a0a5;
   border: 4px solid #fff;
 }
@@ -3871,7 +3871,7 @@ html {
   border: 4px solid #f4f4f4;
 }
 
-.ScreenityDropdownMenuContent {
+.CaptureDropdownMenuContent {
   min-width: 200px;
   background-color: white;
   margin-top: 4px;
@@ -3888,23 +3888,23 @@ html {
   will-change: transform, opacity;
 }
 
-.ScreenityDropdownMenuContent[data-side=top] {
+.CaptureDropdownMenuContent[data-side=top] {
   animation-name: slideDownAndFade;
 }
 
-.ScreenityDropdownMenuContent[data-side=right] {
+.CaptureDropdownMenuContent[data-side=right] {
   animation-name: slideLeftAndFade;
 }
 
-.ScreenityDropdownMenuContent[data-side=bottom] {
+.CaptureDropdownMenuContent[data-side=bottom] {
   animation-name: slideUpAndFade;
 }
 
-.ScreenityDropdownMenuContent[data-side=left] {
+.CaptureDropdownMenuContent[data-side=left] {
   animation-name: slideRightAndFade;
 }
 
-.ScreenityItemIndicator {
+.CaptureItemIndicator {
   position: absolute;
   right: 12px;
   width: 18px;
@@ -3916,8 +3916,8 @@ html {
   justify-content: center;
 }
 
-.ScreenityDropdownMenuItem,
-.ScreenityDropdownMenuRadioItem {
+.CaptureDropdownMenuItem,
+.CaptureDropdownMenuRadioItem {
   font-size: 14px;
   line-height: 1;
   display: flex;
@@ -3933,12 +3933,12 @@ html {
   outline: none;
 }
 
-.ScreenityDropdownMenuItem:hover {
+.CaptureDropdownMenuItem:hover {
   background-color: #F6F7FB !important;
   cursor: pointer;
 }
 
-.ScreenityDropdownMenuItem[data-disabled] {
+.CaptureDropdownMenuItem[data-disabled] {
   color: #6E7684 !important;
   cursor: not-allowed;
   background-color: #F6F7FB !important;

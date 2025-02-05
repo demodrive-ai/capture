@@ -99,7 +99,7 @@ const RadialMenu = (props) => {
             </Tooltip.Trigger>
             <Tooltip.Portal
               container={
-                document.getElementsByClassName("screenity-shadow-dom")[0]
+                document.getElementsByClassName("capture-shadow-dom")[0]
               }
             >
               <Tooltip.Content

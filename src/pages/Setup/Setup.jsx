@@ -70,7 +70,7 @@ const Setup = () => {
                 <span>
                   <img
                     src={chrome.runtime.getURL(
-                      "assets/helper/mini-screenity.png"
+                      "assets/helper/mini-capture.png"
                     )}
                   />
                 </span>
@@ -101,61 +101,34 @@ const Setup = () => {
         {`
 				body {
 					overflow: hidden;
-					margin: 0px;
 					margin: 0;
-	padding: 0;
-	min-height: 100%;
-		background-color: #F6F7FB!important;
-		background: url('` +
-          chrome.runtime.getURL("assets/helper/pattern-svg.svg") +
-          `') repeat;
-		background-size: 62px 23.5px;
-		animation: moveBackground 138s linear infinite;
-		transform: rotate(0deg);
+					padding: 0;
+					min-height: 100%;
+					background-color: hsl(240 10% 3.9%);
+					color: hsl(0 0% 98%);
+					font-family: system-ui, -apple-system, sans-serif;
 				}
 
 				.setupInfo {
 					margin-top: 20px;
 				}
+				
 				a {
-					text-decoration: none!important;
-					color: #4C7DE2;
+					text-decoration: none;
+					color: hsl(217.2 91.2% 59.8%);
+					transition: color 0.2s ease;
 				}
 				
-				@keyframes moveBackground {
-					0% {
-						background-position: 0 0;
-					}
-					100% {
-						background-position: 100% 0;
-					}
-				}
-
-
-				.setupLogo {
-					position: absolute;
-					bottom: 30px;
-					left: 0px;
-					right: 0px;
-					margin: auto;
-					width: 120px;
-				}
-
-
-				.setupBackground {
-					height: 100vh;
-					width: 100vw;
-					display: flex;
-					justify-content: center;
-					align-items: center;
+				a:hover {
+					color: hsl(217.2 91.2% 69.8%);
 				}
 
 				.setupContainer {
 					position: absolute;
-					top: 0px;
-					left: 0px;
-					right: 0px;
-					bottom: 0px;
+					top: 0;
+					left: 0;
+					right: 0;
+					bottom: 0;
 					margin: auto;
 					z-index: 999;
 					display: flex;
@@ -163,11 +136,12 @@ const Setup = () => {
 					align-items: center;
 					width: 60%;
 					height: fit-content;
-					background-color: #fff;
-					border-radius: 30px;
-					padding: 50px 50px;
-					gap: 80px;
-					font-family: 'Satoshi-Medium', sans-serif;
+					background-color: hsl(240 10% 3.9%);
+					border: 1px solid hsl(240 3.7% 15.9%);
+					border-radius: 12px;
+					padding: 24px;
+					gap: 40px;
+					box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 				}
 
 				.setupImage {
@@ -179,7 +153,7 @@ const Setup = () => {
 
 				.setupImage img {
 					width: 100%;
-					border-radius: 30px;
+					border-radius: 8px;
 				}
 
 				.setupText {
@@ -192,54 +166,85 @@ const Setup = () => {
 				}
 
 				.setupEmoji {
-					font-size: 20px;
-					margin-bottom: 10px;
+					font-size: 24px;
+					margin-bottom: 16px;
 				}
 
 				.setupTitle {
-					font-size: 20px;
-					font-weight: bold;
-					margin-bottom: 10px;
-					color: #29292F;
-					font-family: 'Satoshi-Bold', sans-serif!important;
-					letter-spacing: -0.5px;
+					font-size: 24px;
+					font-weight: 600;
+					margin-bottom: 12px;
+					color: hsl(0 0% 98%);
+					letter-spacing: -0.025em;
 				}
 
 				.setupDescription {
-					display: flex;
-					flex-direction: column;
-					justify-content: center;
-					align-items: left;
-					margin-top: 10px;
-					color: #6E7684;
+					color: hsl(240 5% 64.9%);
 					font-size: 14px;
+					line-height: 1.6;
+					margin-bottom: 24px;
 				}
 
 				.setupStep {
-					margin-bottom: 10px;
-					vertical-align: middle;
+					margin-bottom: 12px;
+					display: flex;
+					align-items: center;
+					gap: 8px;
 				}
 
 				.setupStep span {
-
+					display: inline-flex;
 					align-items: center;
 					justify-content: center;
-					text-align: center;
-					width: 20px;
-					height: 20px;
-					padding: 2px;
-					border-radius: 30px;
-					display: inline-flex;
-					vertical-align: middle;
-					margin-left: 3px;
-					margin-right: 3px;
-					background-color: #F4F2F2;
+					width: 24px;
+					height: 24px;
+					border-radius: 6px;
+					background-color: hsl(240 3.7% 15.9%);
+					border: 1px solid hsl(240 5% 26%);
 				}
 
 				.setupStep img {
-					width: 100%;
-					text-align: center;
-					display: block;
+					width: 16px;
+					height: 16px;
+				}
+
+				.button-stop {
+					padding: 10px 20px;
+					background-color: hsl(240 3.7% 15.9%);
+					border: 1px solid hsl(240 5% 26%);
+					border-radius: 6px;
+					color: hsl(0 0% 98%);
+					font-size: 14px;
+					font-weight: 500;
+					cursor: pointer;
+					transition: all 0.2s ease;
+				}
+
+				.button-stop:hover {
+					background-color: hsl(240 5% 26%);
+				}
+
+				.setupLogo {
+					position: absolute;
+					bottom: 24px;
+					left: 0;
+					right: 0;
+					margin: auto;
+					width: 120px;
+					opacity: 0.9;
+				}
+
+				.setupBackground {
+					height: 100vh;
+					width: 100vw;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					background: linear-gradient(
+						to bottom right,
+						hsl(240 10% 3.9%),
+						hsl(240 3.7% 15.9%)
+					);
 				}
 
 				.center {
@@ -252,15 +257,19 @@ const Setup = () => {
 					width: 40%!important;
 				}
 				
-				@media only screen and (max-width: 800px) {
+				@media (max-width: 768px) {
 					.setupContainer {
+						width: 90%;
 						flex-direction: column;
-						gap: 40px;
-
+						padding: 20px;
 					}
 
-					.setupText, .setupImage {
-						width: 100%!important;
+					.setupImage, .setupText {
+						width: 100%;
+					}
+
+					.setupTitle {
+						font-size: 20px;
 					}
 				}
 

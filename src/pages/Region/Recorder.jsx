@@ -10,7 +10,7 @@ import localforage from "localforage";
 
 localforage.config({
   driver: localforage.INDEXEDDB, // or choose another driver
-  name: "screenity", // optional
+  name: "capture", // optional
   version: 1, // optional
 });
 
@@ -57,7 +57,7 @@ const Recorder = () => {
   useEffect(() => {
     window.parent.postMessage(
       {
-        type: "screenity-region-capture-loaded",
+        type: "capture-region-capture-loaded",
       },
       "*"
     );

@@ -17,10 +17,10 @@ const ContentState = (props) => {
   const [timer, setTimer] = React.useState(0);
   const contentStateRef = useRef();
   const [URL, setURL] = useState(
-    "https://help.screenity.io/getting-started/77KizPC8MHVGfpKpqdux9D/why-does-screenity-ask-for-permissions/9AAE8zJ6iiUtCAtjn4SUT1"
+    "https://help.capture.io/getting-started/77KizPC8MHVGfpKpqdux9D/why-does-capture-ask-for-permissions/9AAE8zJ6iiUtCAtjn4SUT1"
   );
   const [URL2, setURL2] = useState(
-    "https://help.screenity.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/how-to-grant-screenity-permission-to-record-your-camera-and-microphone/x6U69TnrbMjy5CQ96Er2E9"
+    "https://help.capture.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/how-to-grant-capture-permission-to-record-your-camera-and-microphone/x6U69TnrbMjy5CQ96Er2E9"
   );
 
   useEffect(() => {
@@ -29,12 +29,12 @@ const ContentState = (props) => {
       setURL(
         "https://translate.google.com/translate?sl=en&tl=" +
           locale +
-          "&u=https://help.screenity.io/getting-started/77KizPC8MHVGfpKpqdux9D/why-does-screenity-ask-for-permissions/9AAE8zJ6iiUtCAtjn4SUT1"
+          "&u=https://help.capture.io/getting-started/77KizPC8MHVGfpKpqdux9D/why-does-capture-ask-for-permissions/9AAE8zJ6iiUtCAtjn4SUT1"
       );
       setURL2(
         "https://translate.google.com/translate?sl=en&tl=" +
           locale +
-          "&u=https://help.screenity.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/how-to-grant-screenity-permission-to-record-your-camera-and-microphone/x6U69TnrbMjy5CQ96Er2E9"
+          "&u=https://help.capture.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/how-to-grant-capture-permission-to-record-your-camera-and-microphone/x6U69TnrbMjy5CQ96Er2E9"
       );
     }
   }, []);
@@ -237,13 +237,13 @@ const ContentState = (props) => {
             // Add help link to modal
             const locale = chrome.i18n.getMessage("@@ui_locale");
             let helpURL =
-              "https://help.screenity.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/what-does-%E2%80%9Cmemory-limit-reached%E2%80%9D-mean-when-recording/8WkwHbt3puuXunYqQnyPcb";
+              "https://help.capture.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/what-does-%E2%80%9Cmemory-limit-reached%E2%80%9D-mean-when-recording/8WkwHbt3puuXunYqQnyPcb";
 
             if (!locale.includes("en")) {
               helpURL =
                 "https://translate.google.com/translate?sl=en&tl=" +
                 locale +
-                "&u=https://help.screenity.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/what-does-%E2%80%9Cmemory-limit-reached%E2%80%9D-mean-when-recording/8WkwHbt3puuXunYqQnyPcb";
+                "&u=https://help.capture.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/what-does-%E2%80%9Cmemory-limit-reached%E2%80%9D-mean-when-recording/8WkwHbt3puuXunYqQnyPcb";
             }
 
             // Check if chunks collection exists and has data
@@ -563,9 +563,9 @@ const ContentState = (props) => {
 
   useEffect(() => {
     const handleMessage = (event) => {
-      if (event.data.type === "screenity-permissions") {
+      if (event.data.type === "capture-permissions") {
         handleDevicePermissions(event.data);
-      } else if (event.data.type === "screenity-permissions-loaded") {
+      } else if (event.data.type === "capture-permissions-loaded") {
         setContentState((prevContentState) => ({
           ...prevContentState,
           permissionsLoaded: true,
@@ -1137,7 +1137,7 @@ const ContentState = (props) => {
 
     const elements = parentDiv.querySelectorAll("*");
     elements.forEach((element) => {
-      element.classList.add("screenity-scrollbar");
+      element.classList.add("capture-scrollbar");
     });
 
     const observer = new MutationObserver((mutationsList) => {
@@ -1148,13 +1148,13 @@ const ContentState = (props) => {
 
           addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
-              node.classList.add("screenity-scrollbar");
+              node.classList.add("capture-scrollbar");
             }
           });
 
           removedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
-              node.classList.remove("screenity-scrollbar");
+              node.classList.remove("capture-scrollbar");
             }
           });
         }
@@ -1180,7 +1180,7 @@ const ContentState = (props) => {
 
     const elements = shadowRoot.querySelectorAll("*");
     elements.forEach((element) => {
-      element.classList.add("screenity-scrollbar");
+      element.classList.add("capture-scrollbar");
     });
 
     const observer = new MutationObserver((mutationsList) => {
@@ -1191,13 +1191,13 @@ const ContentState = (props) => {
 
           addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
-              node.classList.add("screenity-scrollbar");
+              node.classList.add("capture-scrollbar");
             }
           });
 
           removedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
-              node.classList.remove("screenity-scrollbar");
+              node.classList.remove("capture-scrollbar");
             }
           });
         }

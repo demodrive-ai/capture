@@ -103,7 +103,7 @@ const ZoomContainer = () => {
     zoomSelector.current.style.transformOrigin = `${originX}px ${originY}px`;
 
     // I also need to apply the transform to the #canvas-wrapper, if it exists
-    const canvasWrapper = document.querySelector("#canvas-wrapper-screenity");
+    const canvasWrapper = document.querySelector("#canvas-wrapper-capture");
 
     // Substract scroll position
     const fixedOriginX = originX - window.scrollX;
@@ -125,8 +125,8 @@ const ZoomContainer = () => {
     if (!zoomSelector.current) return;
 
     zoomSelector.current.style.transition = "transform 0.5s";
-    if (document.querySelector("#canvas-wrapper-screenity")) {
-      document.querySelector("#canvas-wrapper-screenity").style.transition =
+    if (document.querySelector("#canvas-wrapper-capture")) {
+      document.querySelector("#canvas-wrapper-capture").style.transition =
         "transform 0.5s";
     }
     //if (document.querySelector("#mockup-wrapper")) {
@@ -175,18 +175,18 @@ const ZoomContainer = () => {
 
     setTimeout(() => {
       //if (!contentState.recording) return;
-      if (document.querySelector("#screenity-zoom-wrap")) return;
+      if (document.querySelector("#capture-zoom-wrap")) return;
       const div = document.createElement("div");
-      div.id = "screenity-zoom-wrap";
+      div.id = "capture-zoom-wrap";
       div.style.width = "100vw";
       div.style.height = "100vh";
 
       // Move the body's children into this wrapper
       while (
         document.body.firstChild &&
-        document.body.firstChild.id !== "screenity-ui"
+        document.body.firstChild.id !== "capture-ui"
       ) {
-        if (document.body.firstChild.id !== "screenity-ui") {
+        if (document.body.firstChild.id !== "capture-ui") {
           div.appendChild(document.body.firstChild);
         }
       }
@@ -194,15 +194,15 @@ const ZoomContainer = () => {
       // Append the wrapper to the body
       document.body.prepend(div);
 
-      document.body.appendChild(document.getElementById("screenity-ui"));
-      zoomSelector.current = document.querySelector("#screenity-zoom-wrap");
+      document.body.appendChild(document.getElementById("capture-ui"));
+      zoomSelector.current = document.querySelector("#capture-zoom-wrap");
 
       observer.current = new MutationObserver((mutations) => {
         if (!contentState.showExtension) {
           mutations.forEach((mutation) => {
             if (mutation.addedNodes.length > 0) {
-              const screenityUi = document.querySelector("#screenity-ui");
-              if (screenityUi) {
+              const captureUi = document.querySelector("#capture-ui");
+              if (captureUi) {
                 // Disconnect the observer
                 observer.current.disconnect();
               }
@@ -222,7 +222,7 @@ const ZoomContainer = () => {
         if (observer.current && typeof observer.current === "object") {
           observer.current.disconnect();
         }
-        const zoomWrap = document.querySelector("#screenity-zoom-wrap");
+        const zoomWrap = document.querySelector("#capture-zoom-wrap");
         if (zoomWrap) {
           while (zoomWrap.firstChild) {
             document.body.prepend(zoomWrap.firstChild);
@@ -244,7 +244,7 @@ const ZoomContainer = () => {
   useEffect(() => {
     setTimeout(() => {
       if (!contentState.zoomEnabled || !contentState.showExtension) {
-        const zoomWrap = document.querySelector("#screenity-zoom-wrap");
+        const zoomWrap = document.querySelector("#capture-zoom-wrap");
         if (zoomWrap) {
           while (zoomWrap.firstChild) {
             document.body.prepend(zoomWrap.firstChild);

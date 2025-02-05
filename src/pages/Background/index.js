@@ -9,10 +9,11 @@ import {
 } from "./modules/tabHelper";
 
 import localforage from "localforage";
+import * as cursorTrackingManager from './modules/cursorTrackingManager';
 
 localforage.config({
   driver: localforage.INDEXEDDB,
-  name: "screenity",
+  name: "capture",
   version: 1,
 });
 
@@ -103,6 +104,35 @@ const startRecording = async () => {
     restarting: false,
     recording: true,
   });
+
+  // Get the active tab
+  const { activeTab } = await chrome.storage.local.get(["activeTab"]);
+  
+  // Inject tracking script into the active tab
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId: activeTab },
+      files: ['tracking.bundle.js']
+    });
+    console.log('[Background] Injected tracking script');
+    
+    // Start tracking
+    chrome.tabs.sendMessage(activeTab, { type: 'start-recording' }, (response) => {
+      if (response && response.success) {
+        console.log('[Background] Tracking started successfully');
+      } else {
+        console.error('[Background] Failed to start tracking:', response?.error);
+      }
+    });
+
+    // Get the current window
+    const currentWindow = await chrome.windows.getCurrent();
+    
+    // Start cursor tracking for the window
+    await cursorTrackingManager.startWindowTracking(currentWindow.id);
+  } catch (err) {
+    console.error('Error starting recording:', err);
+  }
 
   // Check if customRegion is set
   const { customRegion } = await chrome.storage.local.get(["customRegion"]);
@@ -264,6 +294,9 @@ const onActivated = async (activeInfo) => {
       sendMessageTab(activeInfo.tabId, { type: "time", time: time });
     }
   }
+
+  // Handle cursor tracking for the new active tab
+  await cursorTrackingManager.handleTabActivated(activeInfo.tabId);
 };
 
 chrome.windows.onFocusChanged.addListener(async (windowId) => {
@@ -339,6 +372,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     ) {
       sendMessageTab(tab.id, { type: "toggle-popup" });
     }
+
+    // Handle cursor tracking for updated tabs
+    await cursorTrackingManager.handleTabUpdated(tabId, changeInfo, tab);
   }
 });
 
@@ -456,6 +492,20 @@ const stopRecording = async () => {
   let duration = Date.now() - recordingStartTime;
   const maxDuration = 7 * 60 * 1000;
 
+  // Get the active tab and stop tracking
+  const { activeTab } = await chrome.storage.local.get(["activeTab"]);
+  try {
+    chrome.tabs.sendMessage(activeTab, { type: 'stop-recording' }, (response) => {
+      if (response && response.success) {
+        console.log('[Background] Tracking stopped successfully');
+      } else {
+        console.error('[Background] Failed to stop tracking:', response?.error);
+      }
+    });
+  } catch (err) {
+    console.error('[Background] Failed to stop tracking:', err);
+  }
+
   if (recordingStartTime === 0) {
     duration = 0;
   }
@@ -523,6 +573,19 @@ const stopRecording = async () => {
   chrome.alarms.clear("recording-alarm");
 
   discardOffscreenDocuments();
+
+  // Stop cursor tracking and get events
+  const cursorEvents = await cursorTrackingManager.stopWindowTracking();
+  
+  // Store cursor events
+  await chrome.storage.local.set({
+    cursorEvents,
+    cursorEventCounts: cursorEvents.reduce((acc, event) => {
+      acc[event.type] = (acc[event.type] || 0) + 1;
+      return acc;
+    }, {}),
+    totalCursorEvents: cursorEvents.length
+  });
 };
 
 const forceProcessing = async () => {
@@ -1574,6 +1637,42 @@ const checkAvailableMemory = (sendResponse) => {
   });
 };
 
+const handleExportTrackingData = async (request) => {
+  try {
+    // Get tracking data from storage
+    const { trackingData } = await chrome.storage.local.get(['trackingData']);
+    
+    if (!trackingData) {
+      console.warn('No tracking data found');
+      return;
+    }
+
+    // Create export data with timestamp
+    const exportData = {
+      timestamp: new Date().toISOString(),
+      ...trackingData
+    };
+
+    // Convert to blob and create download
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    // Trigger download
+    const filename = `capture-tracking-data-${new Date().toISOString()}.json`;
+    await chrome.downloads.download({
+      url: url,
+      filename: filename,
+      saveAs: true
+    });
+
+    // Cleanup
+    URL.revokeObjectURL(url);
+    await chrome.storage.local.remove(['trackingData']);
+  } catch (err) {
+    console.error('Error exporting tracking data:', err);
+  }
+};
+
 // Listen for messages
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === "desktop-capture") {
@@ -1625,9 +1724,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     handleRecordingComplete();
   } else if (request.type === "check-recording") {
     checkRecording();
-  } else if (request.type === "review-screenity") {
+  } else if (request.type === "review-capture") {
     createTab(
-      "https://chrome.google.com/webstore/detail/screenity-screen-recorder/kbbdabhdfibnancpjfhlkhafgdilcnji/reviews",
+      "https://chrome.google.com/webstore/detail/capture-screen-recorder/kbbdabhdfibnancpjfhlkhafgdilcnji/reviews",
       false,
       true
     );
@@ -1635,19 +1734,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     createTab("https://alyssax.substack.com/", false, true);
   } else if (request.type === "open-processing-info") {
     createTab(
-      "https://help.screenity.io/editing-and-exporting/dJRFpGq56JFKC7k8zEvsqb/why-is-there-a-5-minute-limit-for-editing/ddy4e4TpbnrFJ8VoRT37tQ",
+      "https://help.capture.io/editing-and-exporting/dJRFpGq56JFKC7k8zEvsqb/why-is-there-a-5-minute-limit-for-editing/ddy4e4TpbnrFJ8VoRT37tQ",
       true,
       true
     );
   } else if (request.type === "upgrade-info") {
     createTab(
-      "https://help.screenity.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-the-technical-requirements-for-using-screenity/6kdB6qru6naVD8ZLFvX3m9",
+      "https://help.capture.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-the-technical-requirements-for-using-capture/6kdB6qru6naVD8ZLFvX3m9",
       true,
       true
     );
   } else if (request.type === "trim-info") {
     createTab(
-      "https://help.screenity.io/editing-and-exporting/dJRFpGq56JFKC7k8zEvsqb/how-to-cut-trim-or-mute-parts-of-your-video/svNbM7YHYY717MuSWXrKXH",
+      "https://help.capture.io/editing-and-exporting/dJRFpGq56JFKC7k8zEvsqb/how-to-cut-trim-or-mute-parts-of-your-video/svNbM7YHYY717MuSWXrKXH",
       true,
       true
     );
@@ -1655,7 +1754,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     createTab("https://tally.so/r/npojNV", true, true);
   } else if (request.type === "chrome-update-info") {
     createTab(
-      "https://help.screenity.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-the-technical-requirements-for-using-screenity/6kdB6qru6naVD8ZLFvX3m9",
+      "https://help.capture.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-the-technical-requirements-for-using-capture/6kdB6qru6naVD8ZLFvX3m9",
       true,
       true
     );
@@ -1670,15 +1769,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.type === "sign-out-drive") {
     handleSignOutDrive();
   } else if (request.type === "open-help") {
-    createTab("https://help.screenity.io/", true, true);
+    createTab("https://help.capture.io/", true, true);
   } else if (request.type === "memory-limit-help") {
     createTab(
-      "https://help.screenity.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/what-does-%E2%80%9Cmemory-limit-reached%E2%80%9D-mean-when-recording/8WkwHbt3puuXunYqQnyPcb",
+      "https://help.capture.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/what-does-%E2%80%9Cmemory-limit-reached%E2%80%9D-mean-when-recording/8WkwHbt3puuXunYqQnyPcb",
       true,
       true
     );
   } else if (request.type === "open-home") {
-    createTab("https://screenity.io/", false, true);
+    createTab("https://capture.io/", false, true);
   } else if (request.type === "report-bug") {
     createTab(
       "https://tally.so/r/3ElpXq?version=" +
@@ -1755,6 +1854,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     );
   } else if (request.type === "add-alarm-listener") {
     addAlarmListener();
+  } else if (request.type === 'tracking-data') {
+    console.log('[Background] Received tracking data:', request.data);
+    // Store tracking data in local storage for later use
+    chrome.storage.local.set({
+      trackingData: request.data
+    });
+  } else if (request.type === "export-tracking-data") {
+    handleExportTrackingData(request);
+    return true;
+  } else if (request.type === 'cursor-event') {
+    cursorTrackingManager.handleCursorEvent(sender.tab.id, request.data);
+  } else if (request.type === 'cursor-tracker-tab-info') {
+    // Store tab info for enriching cursor events
+    chrome.storage.local.set({
+      [`tab_info_${sender.tab.id}`]: request.data
+    });
   }
 });
 

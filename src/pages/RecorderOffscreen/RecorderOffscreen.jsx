@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import localforage from "localforage";
+import MetadataTracker from '../Content/trackers/MetadataTracker';
+import CursorTracker from '../Content/trackers/CursorTracker';
 
 localforage.config({
   driver: localforage.INDEXEDDB, // or choose another driver
-  name: "screenity", // optional
+  name: "capture", // optional
   version: 1, // optional
 });
 
@@ -44,6 +46,9 @@ const RecorderOffscreen = () => {
   const quality = useRef("1080p");
   const fps = useRef(30);
   const backupRef = useRef(false);
+
+  const metadataTracker = useRef(null);
+  const cursorTracker = useRef(null);
 
   async function startRecording() {
     // Check that a recording is not already in progress
@@ -121,6 +126,16 @@ const RecorderOffscreen = () => {
         audioBitsPerSecond: audioBitsPerSecond,
         videoBitsPerSecond: videoBitsPerSecond,
       });
+
+      // Start trackers
+      if (metadataTracker.current) {
+        metadataTracker.current.setVideoStream(liveStream.current);
+        metadataTracker.current.startTracking();
+      }
+      if (cursorTracker.current) {
+        cursorTracker.current.startTracking();
+      }
+      console.log('[RecorderOffscreen] Started trackers');
     } catch (err) {
       chrome.runtime.sendMessage({
         type: "recording-error",
@@ -195,10 +210,21 @@ const RecorderOffscreen = () => {
             lastTimecode.current = timestamp;
           }
 
+          // Add metadata for this chunk
+          let chunkMetadata = null;
+          if (metadataTracker.current) {
+            chunkMetadata = metadataTracker.current.addChunkMetadata(index.current, {
+              timestamp,
+              quality: quality.current,
+            });
+          }
+
           await chunksStore.setItem(`chunk_${index.current}`, {
             index: index.current,
             chunk: e.data,
             timestamp: timestamp,
+            metadata: chunkMetadata,
+            cursorEvents: cursorTracker.current ? cursorTracker.current.getAllCursorData() : []
           });
 
           if (backupRef.current) {
@@ -244,6 +270,19 @@ const RecorderOffscreen = () => {
   }
 
   async function stopRecording() {
+    // Stop trackers and collect final data
+    if (metadataTracker.current) {
+      metadataTracker.current.stopTracking();
+      const allMetadata = metadataTracker.current.getAllMetadata();
+      console.log('[RecorderOffscreen] Final metadata:', allMetadata);
+    }
+    
+    if (cursorTracker.current) {
+      cursorTracker.current.stopTracking();
+      const allCursorData = cursorTracker.current.getAllCursorData();
+      console.log('[RecorderOffscreen] Final cursor data:', allCursorData);
+    }
+
     isFinishing.current = true;
     if (recorder.current !== null) {
       recorder.current.stop();
@@ -456,7 +495,8 @@ const RecorderOffscreen = () => {
             audio: data.systemAudio,
             video: {
               frameRate: 30,
-              displaySurface: "monitor",
+              displaySurface: "window",
+              surfaceType: "window"
             },
             selfBrowserSurface: "exclude",
             systemAudio: "include",
@@ -590,6 +630,11 @@ const RecorderOffscreen = () => {
   useEffect(() => {
     // Event listener (extension messaging)
     chrome.runtime.onMessage.addListener(onMessage);
+
+    // Initialize trackers
+    metadataTracker.current = new MetadataTracker();
+    cursorTracker.current = new CursorTracker();
+    console.log('[RecorderOffscreen] Trackers initialized');
 
     return () => {
       chrome.runtime.onMessage.removeListener(onMessage);

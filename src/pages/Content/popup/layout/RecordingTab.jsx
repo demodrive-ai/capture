@@ -127,3 +127,82 @@ const RecordingTab = (props) => {
 };
 
 export default RecordingTab;
+
+<style>
+{`
+.recording-ui {
+  background-color: hsl(240 10% 3.9%);
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
+
+.TabsRoot {
+  display: flex;
+  flex-direction: column;
+}
+
+.TabsList {
+  display: flex;
+  justify-content: space-between;
+  background-color: hsl(240 6% 10%);
+  border-bottom: 1px solid hsl(240 3.7% 15.9%);
+  padding: 4px;
+}
+
+.TabsTrigger {
+  all: unset;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  font-size: 14px;
+  line-height: 1;
+  color: hsl(240 5% 64.9%);
+  user-select: none;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.TabsTrigger:hover {
+  color: hsl(0 0% 98%);
+  background-color: hsl(240 5% 26%);
+}
+
+.TabsTrigger[data-state="active"] {
+  color: hsl(0 0% 98%);
+  background-color: hsl(240 3.7% 15.9%);
+}
+
+.TabsTriggerLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.TabsTriggerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.TabsTriggerIcon img {
+  width: 16px;
+  height: 16px;
+  opacity: 0.9;
+}
+
+.TabsContent {
+  flex-grow: 1;
+  padding: 16px;
+  background-color: hsl(240 10% 3.9%);
+  outline: none;
+}
+
+.TabsContent[data-state="inactive"] {
+  display: none;
+}
+`}
+</style>

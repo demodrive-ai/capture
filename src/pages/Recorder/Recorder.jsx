@@ -2,10 +2,12 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import localforage from "localforage";
 
 import Warning from "./warning/Warning";
+import MetadataTracker from '../Content/trackers/MetadataTracker';
+import CursorTracker from '../Content/trackers/CursorTracker';
 
 localforage.config({
   driver: localforage.INDEXEDDB, // or choose another driver
-  name: "screenity", // optional
+  name: "capture", // optional
   version: 1, // optional
 });
 
@@ -48,6 +50,9 @@ const Recorder = () => {
 
   const backupRef = useRef(false);
 
+  const metadataTracker = useRef(null);
+  const cursorTracker = useRef(null);
+
   useEffect(() => {
     chrome.storage.local.get(["backup"], (result) => {
       if (result.backup) {
@@ -58,251 +63,251 @@ const Recorder = () => {
     });
   }, []);
 
+  useEffect(() => {
+    // Clear any existing data on mount
+    chunksStore.clear();
+    console.log('Cleared existing chunks store');
+
+    // Initialize trackers
+    metadataTracker.current = new MetadataTracker();
+    cursorTracker.current = new CursorTracker();
+    console.log('Initialized trackers');
+
+    return () => {
+      // Cleanup on unmount
+      if (metadataTracker.current) metadataTracker.current.clearData();
+      if (cursorTracker.current) cursorTracker.current.clearData();
+    };
+  }, []);
+
   async function startRecording() {
-    // Check that a recording is not already in progress
     if (recorder.current !== null) return;
 
-    navigator.storage.persist();
-    // Check if the stream actually has data in it
-    if (helperVideoStream.current.getVideoTracks().length === 0) {
-      chrome.runtime.sendMessage({
-        type: "recording-error",
-        error: "stream-error",
-        why: "No video tracks available",
-      });
-      return;
-    }
-
-    chunksStore.clear();
-
-    lastTimecode.current = 0;
-    hasChunks.current = 0;
-
     try {
-      const { qualityValue } = await chrome.storage.local.get(["qualityValue"]);
+      // Clear all stores
+      await Promise.all([
+        chunksStore.clear(),
+        metadataTracker.current?.clearData(),
+        cursorTracker.current?.clearData()
+      ]);
+      console.log('Cleared all stores');
 
-      let audioBitsPerSecond = 128000;
-      let videoBitsPerSecond = 5000000;
-
-      if (qualityValue === "4k") {
-        audioBitsPerSecond = 192000;
-        videoBitsPerSecond = 40000000;
-      } else if (qualityValue === "1080p") {
-        audioBitsPerSecond = 192000;
-        videoBitsPerSecond = 8000000;
-      } else if (qualityValue === "720p") {
-        audioBitsPerSecond = 128000;
-        videoBitsPerSecond = 5000000;
-      } else if (qualityValue === "480p") {
-        audioBitsPerSecond = 96000;
-        videoBitsPerSecond = 2500000;
-      } else if (qualityValue === "360p") {
-        audioBitsPerSecond = 96000;
-        videoBitsPerSecond = 1000000;
-      } else if (qualityValue === "240p") {
-        audioBitsPerSecond = 64000;
-        videoBitsPerSecond = 500000;
+      // Start tracking directly in recorder for all recording modes
+      if (cursorTracker.current) {
+        await cursorTracker.current.startTracking();
+        console.log('[Recorder] Started cursor tracking');
+      }
+      
+      if (metadataTracker.current) {
+        await metadataTracker.current.startTracking();
+        console.log('[Recorder] Started metadata tracking');
       }
 
-      // List all mimeTypes
-      const mimeTypes = [
-        "video/webm;codecs=avc1",
-        "video/webm;codecs=vp8,opus",
-        "video/webm;codecs=vp9,opus",
-        "video/webm;codecs=vp9",
-        "video/webm;codecs=vp8",
-        "video/webm;codecs=h264",
-        "video/webm",
-      ];
+      if (!helperVideoStream.current || helperVideoStream.current.getVideoTracks().length === 0) {
+        throw new Error("No video tracks available");
+      }
 
-      // Check if the browser supports any of the mimeTypes, make sure to select the first one that is supported from the list
-      let mimeType = mimeTypes.find((mimeType) =>
-        MediaRecorder.isTypeSupported(mimeType)
-      );
+      console.log('Video tracks available:', helperVideoStream.current.getVideoTracks().length);
 
-      // If no mimeType is supported, throw an error
-      if (!mimeType) {
-        chrome.runtime.sendMessage({
-          type: "recording-error",
-          error: "stream-error",
-          why: "No supported mimeTypes available",
-        });
-        return;
+      const { qualityValue } = await chrome.storage.local.get(["qualityValue"]);
+      console.log('Recording quality:', qualityValue);
+
+      // Set more conservative bitrates
+      let audioBitsPerSecond = 64000; // Reduced from 128000
+      let videoBitsPerSecond = 2500000; // Reduced from 5000000
+
+      if (qualityValue === "4k") {
+        audioBitsPerSecond = 128000;
+        videoBitsPerSecond = 8000000;
+      } else if (qualityValue === "1080p") {
+        audioBitsPerSecond = 96000;
+        videoBitsPerSecond = 4000000;
+      } else if (qualityValue === "720p") {
+        audioBitsPerSecond = 64000;
+        videoBitsPerSecond = 2500000;
+      } else {
+        // For all lower qualities, use most conservative settings
+        audioBitsPerSecond = 32000;
+        videoBitsPerSecond = 1000000;
+      }
+
+      console.log('Using bitrates:', { audioBitsPerSecond, videoBitsPerSecond });
+
+      // Try simpler codec first
+      const mimeType = "video/webm;codecs=vp8,opus";
+      console.log('Using mime type:', mimeType);
+
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        throw new Error(`Mime type ${mimeType} not supported`);
       }
 
       recorder.current = new MediaRecorder(liveStream.current, {
-        mimeType: mimeType,
-        audioBitsPerSecond: audioBitsPerSecond,
-        videoBitsPerSecond: videoBitsPerSecond,
+        mimeType,
+        audioBitsPerSecond,
+        videoBitsPerSecond,
       });
-    } catch (err) {
-      chrome.runtime.sendMessage({
-        type: "recording-error",
-        error: "stream-error",
-        why: JSON.stringify(err),
+
+      console.log('MediaRecorder created with settings:', recorder.current);
+
+      chrome.storage.local.set({
+        recording: true,
+        restarting: false,
       });
-      return;
-    }
 
-    chrome.storage.local.set({
-      recording: true,
-      restarting: false,
-    });
-
-    isRestarting.current = false;
-    index.current = 0;
-
-    try {
-      recorder.current.start(3000);
-    } catch (err) {
-      chrome.runtime.sendMessage({
-        type: "recording-error",
-        error: "stream-error",
-        why: JSON.stringify(err),
-      });
-      return;
-    }
-
-    recorder.current.onstop = (e) => {
-      if (isRestarting.current) return;
-      setTimeout(() => {
-        if (!sentLast.current) {
-          chrome.runtime.sendMessage({ type: "video-ready" });
-          isFinishing.current = false;
-        }
-      }, 3000);
       isRestarting.current = false;
-    };
+      index.current = 0;
 
-    const checkMaxMemory = () => {
-      try {
-        navigator.storage.estimate().then((data) => {
-          const minMemory = 26214400;
-          // Check if there's enough space to keep recording
-          if (data.quota < minMemory) {
-            chrome.storage.local.set({
-              recording: false,
-              restarting: false,
-              tabRecordedID: null,
-              memoryError: true,
-            });
-            chrome.runtime.sendMessage({ type: "stop-recording-tab" });
-          }
-        });
-      } catch (err) {
-        chrome.runtime.sendMessage({
-          type: "recording-error",
-          error: "stream-error",
-          why: JSON.stringify(err),
-        });
-      }
-    };
+      // Use 2-second chunks for better stability
+      recorder.current.start(2000);
+      console.log('Recording started with 2-second chunks');
 
-    const handleDataAvailable = async (e) => {
-      checkMaxMemory();
-
-      if (e.data.size > 0 && (e.timecode != null || e.timecode != undefined)) {
+      recorder.current.ondataavailable = async (e) => {
         try {
-          const timestamp = e.timecode;
-          if (hasChunks.current === false) {
-            hasChunks.current = true;
-            lastTimecode.current = timestamp;
-          } else if (timestamp < lastTimecode.current) {
-            // This is a duplicate chunk, ignore it
-            return;
-          } else {
-            lastTimecode.current = timestamp;
-          }
-
-          await chunksStore.setItem(`chunk_${index.current}`, {
-            index: index.current,
-            chunk: e.data,
-            timestamp: timestamp,
-          });
-
-          if (backupRef.current) {
-            chrome.runtime.sendMessage({
-              type: "write-file",
+          if (e.data && e.data.size > 0) {
+            console.log(`Received chunk ${index.current}, size: ${e.data.size} bytes`);
+            
+            // Store video chunk
+            await chunksStore.setItem(`chunk_${index.current}`, {
               index: index.current,
+              chunk: e.data,
+              timestamp: Date.now()
             });
+
+            // Add chunk metadata (if tracker is active)
+            if (metadataTracker.current) {
+              await metadataTracker.current.addChunkMetadata(index.current, {
+                quality: qualityValue
+              });
+            }
+
+            // Check storage usage
+            const { quota, usage } = await navigator.storage.estimate();
+            const usedPercentage = (usage / quota) * 100;
+            console.log(`Storage usage: ${usedPercentage.toFixed(2)}%`);
+            
+            if (usedPercentage > 85) {
+              console.warn('Storage usage critical, stopping recording');
+              await stopRecording();
+              chrome.runtime.sendMessage({ 
+                type: "recording-error",
+                error: "memory-full",
+                why: `Storage usage at ${usedPercentage.toFixed(2)}%`
+              });
+              return;
+            }
+
+            index.current++;
+          } else {
+            console.warn('Received empty chunk or zero size chunk');
           }
-          index.current++;
         } catch (err) {
-          chrome.storage.local.set({
-            recording: false,
-            restarting: false,
-            tabRecordedID: null,
-            memoryError: true,
+          console.error('Error handling chunk:', err);
+          await stopRecording();
+          chrome.runtime.sendMessage({ 
+            type: "recording-error",
+            error: "chunk-error",
+            why: err.message
           });
-          chrome.runtime.sendMessage({ type: "stop-recording-tab" });
         }
-      } else {
-        // Check Media Recorder state
-        if (recorder.current.state === "inactive") {
-          chrome.storage.local.set({
-            recording: false,
-            restarting: false,
-            tabRecordedID: null,
-          });
-          chrome.runtime.sendMessage({ type: "stop-recording-tab" });
-        }
-      }
+      };
 
-      if (isFinishing.current) {
-        sentLast.current = true;
-        chrome.runtime.sendMessage({ type: "video-ready" });
-      }
-    };
+      recorder.current.onerror = async (err) => {
+        console.error('MediaRecorder error:', err);
+        await stopRecording();
+        chrome.runtime.sendMessage({ 
+          type: "recording-error",
+          error: "recorder-error",
+          why: err.message
+        });
+      };
 
-    recorder.current.ondataavailable = async (e) => {
-      await handleDataAvailable(e);
-    };
-
-    liveStream.current.getVideoTracks()[0].onended = () => {
-      chrome.storage.local.set({
-        recording: false,
-        restarting: false,
-        tabRecordedID: null,
+    } catch (err) {
+      console.error('Error starting recording:', err);
+      chrome.runtime.sendMessage({
+        type: "recording-error",
+        error: "start-error",
+        why: err.message
       });
-      chrome.runtime.sendMessage({ type: "stop-recording-tab" });
-    };
-
-    helperVideoStream.current.getVideoTracks()[0].onended = () => {
-      chrome.storage.local.set({
-        recording: false,
-        restarting: false,
-        tabRecordedID: null,
-      });
-      chrome.runtime.sendMessage({ type: "stop-recording-tab" });
-    };
+    }
   }
 
   async function stopRecording() {
-    isFinishing.current = true;
-    if (recorder.current !== null) {
-      recorder.current.stop();
+    try {
+      console.log('Stopping recording');
+      isFinishing.current = true;
+
+      // Stop trackers and collect data
+      let cursorEvents = [];
+      let metadata = null;
+
+      if (cursorTracker.current) {
+        await cursorTracker.current.stopTracking();
+        cursorEvents = await cursorTracker.current.getAllEvents();
+        console.log('[Recorder] Cursor events collected:', cursorEvents.length);
+      }
+
+      if (metadataTracker.current) {
+        await metadataTracker.current.stopTracking();
+        metadata = await metadataTracker.current.getRecordingMetadata();
+        console.log('[Recorder] Metadata collected:', metadata);
+      }
+
+      // Store tracking data in chrome.storage.local
+      await chrome.storage.local.set({
+        trackingData: {
+          cursorEvents,
+          metadata
+        }
+      });
+      console.log('[Recorder] Tracking data stored in chrome.storage.local');
+
+      // Stop recording
+      if (recorder.current && recorder.current.state !== 'inactive') {
+        recorder.current.stop();
+        console.log('Stopped MediaRecorder');
+      }
       recorder.current = null;
-    }
 
-    if (liveStream.current !== null) {
-      liveStream.current.getTracks().forEach(function (track) {
-        track.stop();
+      // Stop all tracks
+      const streams = [liveStream.current, helperVideoStream.current, helperAudioStream.current];
+      streams.forEach(stream => {
+        if (stream) {
+          stream.getTracks().forEach(track => {
+            track.stop();
+            console.log(`Stopped track: ${track.kind}`);
+          });
+        }
       });
+
       liveStream.current = null;
-    }
-
-    if (helperVideoStream.current !== null) {
-      helperVideoStream.current.getTracks().forEach(function (track) {
-        track.stop();
-      });
       helperVideoStream.current = null;
-    }
-
-    if (helperAudioStream.current !== null) {
-      helperAudioStream.current.getTracks().forEach(function (track) {
-        track.stop();
-      });
       helperAudioStream.current = null;
+
+      // Get final counts
+      const chunkKeys = await chunksStore.keys();
+
+      console.log(`Recording finished:
+        - ${chunkKeys.length} video chunks
+        - ${cursorEvents.length || 0} cursor events
+        - Duration: ${metadata?.duration ? (metadata.duration / 1000).toFixed(1) + 's' : 'unknown'}
+      `);
+
+      // After successful recording, export tracking data
+      try {
+        const trackingData = await exportTrackingData();
+        console.log('Successfully exported tracking data');
+      } catch (err) {
+        console.error('Failed to export tracking data:', err);
+      }
+
+      chrome.runtime.sendMessage({ type: "video-ready" });
+    } catch (err) {
+      console.error('Error stopping recording:', err);
+      chrome.runtime.sendMessage({ 
+        type: "recording-error",
+        error: "stop-error",
+        why: err.message
+      });
     }
   }
 
@@ -579,9 +584,9 @@ const Recorder = () => {
       if (data.recordingType === "camera") {
         startStream(data, null, null, permissions, permissions2);
       } else if (!isTab.current) {
-        let captureTypes = ["screen", "window", "tab", "audio"];
+        let captureTypes = ["window", "audio"];
         if (tabPreferred.current) {
-          captureTypes = ["tab", "screen", "window", "audio"];
+          captureTypes = ["window", "audio"];
         }
         chrome.desktopCapture.chooseDesktopMedia(
           captureTypes,
@@ -677,6 +682,96 @@ const Recorder = () => {
     };
   }, []);
 
+  // Add this new function to export tracking data
+  async function exportTrackingData() {
+    try {
+      // Get tracking data directly from chrome.storage.local
+      const { cursorEvents, cursorEventCounts, totalCursorEvents, metadata } = await chrome.storage.local.get([
+        'cursorEvents',
+        'cursorEventCounts',
+        'totalCursorEvents',
+        'metadata'
+      ]);
+      
+      // Get video chunks metadata
+      const chunks = await getAllChunks();
+
+      // Create a complete tracking data object
+      const exportData = {
+        metadata: {
+          ...metadata,
+          totalChunks: chunks.length,
+          totalCursorEvents: totalCursorEvents || 0,
+          cursorEventCounts: cursorEventCounts || {},
+          exportTime: new Date().toISOString()
+        },
+        cursorEvents: cursorEvents || [],
+        chunksMetadata: chunks.map(chunk => ({
+          index: chunk.index,
+          timestamp: chunk.timestamp,
+          size: chunk.chunk?.size || 0
+        }))
+      };
+
+      console.log('Exporting tracking data:', {
+        totalChunks: chunks.length,
+        totalCursorEvents,
+        eventCounts: cursorEventCounts
+      });
+
+      // Convert to JSON and create blob
+      const jsonBlob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(jsonBlob);
+
+      // Create download link
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `capture-tracking-data-${new Date().toISOString()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      return exportData;
+    } catch (err) {
+      console.error('Error exporting tracking data:', err);
+      throw err;
+    }
+  }
+
+  // Helper function to get all chunks metadata
+  async function getAllChunks() {
+    const chunks = [];
+    await chunksStore.iterate((value, key) => {
+      chunks.push(value);
+    });
+    return chunks.sort((a, b) => a.index - b.index);
+  }
+
+  // Add listener for tracking data from content script
+  useEffect(() => {
+    const trackingDataListener = (request, sender, sendResponse) => {
+      if (request.type === 'tracking-data') {
+        const { cursorEvents, metadata } = request.data;
+        if (cursorTracker.current) {
+          // Store received cursor events
+          cursorEvents.forEach(event => {
+            cursorTracker.current.addEvent(event);
+          });
+        }
+        if (metadataTracker.current && metadata) {
+          // Update metadata if needed
+          Object.assign(metadataTracker.current, metadata);
+        }
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(trackingDataListener);
+    return () => {
+      chrome.runtime.onMessage.removeListener(trackingDataListener);
+    };
+  }, []);
+
   return (
     <div className="wrap">
       <img
@@ -706,25 +801,131 @@ const Recorder = () => {
       </div>
       {!isTab.current && !started && <Warning />}
       <div className="setupBackgroundSVG"></div>
+      {started && (
+        <div 
+          className="button-export"
+          onClick={exportTrackingData}
+          style={{
+            padding: '10px 20px',
+            background: '#FFF',
+            borderRadius: '30px',
+            color: '#29292F',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            marginTop: '10px',
+            border: '1px solid #E8E8E8',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            zIndex: 999999
+          }}
+        >
+          Export Tracking Data
+        </div>
+      )}
       <style>
         {`
 				body {
-					overflow: hidden;
+					background-color: hsl(240 10% 3.9%);
+					color: hsl(0 0% 98%);
+					font-family: system-ui, -apple-system, sans-serif;
+					margin: 0;
+					padding: 0;
+					min-height: 100%;
 				}
 				.button-stop {
 					padding: 10px 20px;
-					background: #FFF;
-					border-radius: 30px;
-					color: #29292F;
+					background-color: hsl(240 3.7% 15.9%);
+					border: 1px solid hsl(240 5% 26%);
+					border-radius: 6px;
+					color: hsl(0 0% 98%);
 					font-size: 14px;
 					font-weight: 500;
 					cursor: pointer;
-					margin-top: 0px;
-					border: 1px solid #E8E8E8;
-					margin-left: auto;
-					margin-right: auto;
+					transition: all 0.2s ease;
+					margin: 0 auto;
 					z-index: 999999;
 				}
+
+				.button-stop:hover {
+					background-color: hsl(240 5% 26%);
+				}
+
+				.button-export {
+					padding: 10px 20px;
+					background-color: hsl(217.2 91.2% 59.8%);
+					border: none;
+					border-radius: 6px;
+					color: hsl(0 0% 98%);
+					font-size: 14px;
+					font-weight: 500;
+					cursor: pointer;
+					transition: all 0.2s ease;
+					margin: 10px auto;
+					z-index: 999999;
+				}
+
+				.button-export:hover {
+					background-color: hsl(217.2 91.2% 69.8%);
+				}
+				
+				.logo {
+					position: absolute;
+					bottom: 24px;
+					left: 0;
+					right: 0;
+					margin: auto;
+					width: 120px;
+					opacity: 0.9;
+				}
+
+				.wrap {
+					position: absolute;
+					top: 0;
+					left: 0;
+					width: 100%;
+					height: 100%;
+					background: linear-gradient(
+						to bottom right,
+						hsl(240 10% 3.9%),
+						hsl(240 3.7% 15.9%)
+					);
+				}
+
+				.middle-area {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					justify-content: center;
+					height: 100%;
+					font-family: system-ui, -apple-system, sans-serif;
+				}
+
+				.middle-area img {
+					width: 40px;
+					margin-bottom: 20px;
+					opacity: 0.9;
+				}
+
+				.title {
+					font-size: 24px;
+					font-weight: 600;
+					color: hsl(0 0% 98%);
+					margin-bottom: 14px;
+					letter-spacing: -0.025em;
+					text-align: center;
+				}
+
+				.subtitle {
+					font-size: 14px;
+					font-weight: 400;
+					color: hsl(240 5% 64.9%);
+					margin-bottom: 24px;
+					text-align: center;
+					max-width: 500px;
+					line-height: 1.6;
+				}
+				
 				.setupBackgroundSVG {
 					position: absolute;
 					top: 0px;
@@ -747,50 +948,7 @@ const Recorder = () => {
 						background-position: 100% 0;
 					}
 				}
-				.logo {
-					position: absolute;
-					bottom: 30px;
-					left: 0px;
-					right: 0px;
-					margin: auto;
-					width: 120px;
-				}
-				.wrap {
-					position: absolute;
-					top: 0;
-					left: 0;
-					width: 100%;
-					height: 100%;
-					background-color: #F6F7FB;
-				}
-					.middle-area {
-						display: flex;
-						flex-direction: column;
-						align-items: center;
-						justify-content: center;
-						height: 100%;
-						font-family: "Satoshi Medium", sans-serif;
-					}
-					.middle-area img {
-						width: 40px;
-						margin-bottom: 20px;
-					}
-					.title {
-						font-size: 24px;
-						font-weight: 700;
-						color: #1A1A1A;
-						margin-bottom: 14px;
-						font-family: Satoshi-Medium, sans-serif;
-					}
-					.subtitle {
-						font-size: 14px;
-						font-weight: 400;
-						color: #6E7684;
-						margin-bottom: 24px;
-						font-family: Satoshi-Medium, sans-serif;
-					}
-					
-					`}
+				`}
       </style>
     </div>
   );

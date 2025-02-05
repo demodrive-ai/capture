@@ -603,6 +603,47 @@ const RightPanel = () => {
                   <ReactSVG src={URL + "editor/icons/right-arrow.svg"} />
                 </div>
               </div>
+
+              {/* Export Tracking Data Button */}
+              <div
+                role="button"
+                className={styles.button}
+                onClick={() => {
+                  // Send message to background script to handle the export
+                  chrome.runtime.sendMessage({ 
+                    type: "export-tracking-data",
+                    title: contentState.title 
+                  });
+                }}
+                disabled={!contentState.mp4ready || contentState.isFfmpegRunning}
+              >
+                <div className={styles.buttonLeft}>
+                  <ReactSVG src={URL + "editor/icons/download.svg"} />
+                </div>
+                <div className={styles.buttonMiddle}>
+                  <div className={styles.buttonTitle}>
+                    {contentState.downloadingTracking
+                      ? chrome.i18n.getMessage("downloadingLabel")
+                      : "Export Tracking Data"}
+                  </div>
+                  <div className={styles.buttonDescription}>
+                    {contentState.offline && !contentState.ffmpegLoaded
+                      ? chrome.i18n.getMessage("noConnectionLabel")
+                      : contentState.updateChrome ||
+                        contentState.noffmpeg ||
+                        (contentState.duration > contentState.editLimit &&
+                          !contentState.override)
+                      ? chrome.i18n.getMessage("notAvailableLabel")
+                      : contentState.mp4ready && !contentState.isFfmpegRunning
+                      ? "Download cursor movements and interaction data"
+                      : chrome.i18n.getMessage("preparingLabel")}
+                  </div>
+                </div>
+                <div className={styles.buttonRight}>
+                  <ReactSVG src={URL + "editor/icons/right-arrow.svg"} />
+                </div>
+              </div>
+
               {!contentState.fallback && (
                 <div
                   role="button"

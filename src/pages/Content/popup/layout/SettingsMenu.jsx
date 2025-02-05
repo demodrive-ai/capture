@@ -131,7 +131,7 @@ const SettingsMenu = (props) => {
                 // Download file
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = "screenity-troubleshooting.zip";
+                a.download = "capture-troubleshooting.zip";
                 a.click();
                 window.URL.revokeObjectURL(url);
 
@@ -194,7 +194,7 @@ const SettingsMenu = (props) => {
             </DropdownMenu.SubTrigger>
             <DropdownMenu.Portal>
               <DropdownMenu.SubContent
-                className="ScreenityDropdownMenuContent"
+                className="CaptureDropdownMenuContent"
                 sideOffset={0}
                 alignOffset={-3}
               >
@@ -206,7 +206,7 @@ const SettingsMenu = (props) => {
                   }
                 >
                   <DropdownMenu.Item
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     onClick={(e) => {
                       chrome.runtime.sendMessage({
                         type: "resize-window",
@@ -227,7 +227,7 @@ const SettingsMenu = (props) => {
                   }
                 >
                   <DropdownMenu.Item
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     onClick={(e) => {
                       chrome.runtime.sendMessage({
                         type: "resize-window",
@@ -248,7 +248,7 @@ const SettingsMenu = (props) => {
                   }
                 >
                   <DropdownMenu.Item
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     onClick={(e) => {
                       chrome.runtime.sendMessage({
                         type: "resize-window",
@@ -269,7 +269,7 @@ const SettingsMenu = (props) => {
                   }
                 >
                   <DropdownMenu.Item
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     onClick={(e) => {
                       chrome.runtime.sendMessage({
                         type: "resize-window",
@@ -290,7 +290,7 @@ const SettingsMenu = (props) => {
                   }
                 >
                   <DropdownMenu.Item
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     onClick={(e) => {
                       chrome.runtime.sendMessage({
                         type: "resize-window",
@@ -311,7 +311,7 @@ const SettingsMenu = (props) => {
                   }
                 >
                   <DropdownMenu.Item
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     onClick={(e) => {
                       chrome.runtime.sendMessage({
                         type: "resize-window",
@@ -348,7 +348,7 @@ const SettingsMenu = (props) => {
             </DropdownMenu.SubTrigger>
             <DropdownMenu.Portal>
               <DropdownMenu.SubContent
-                className="ScreenityDropdownMenuContent"
+                className="CaptureDropdownMenuContent"
                 sideOffset={0}
                 alignOffset={-3}
               >
@@ -372,12 +372,12 @@ const SettingsMenu = (props) => {
                     }
                   >
                     <DropdownMenu.RadioItem
-                      className="ScreenityDropdownMenuItem"
+                      className="CaptureDropdownMenuItem"
                       value="4k"
                       disabled={RAM < 8 || width < 3840 || height < 2160}
                     >
                       4k
-                      <DropdownMenu.ItemIndicator className="ScreenityItemIndicator">
+                      <DropdownMenu.ItemIndicator className="CaptureItemIndicator">
                         <img src={CheckWhiteIcon} />
                       </DropdownMenu.ItemIndicator>
                     </DropdownMenu.RadioItem>
@@ -390,12 +390,12 @@ const SettingsMenu = (props) => {
                     }
                   >
                     <DropdownMenu.RadioItem
-                      className="ScreenityDropdownMenuItem"
+                      className="CaptureDropdownMenuItem"
                       value="1080p"
                       disabled={RAM < 4 || width < 1920 || height < 1080}
                     >
                       1080p
-                      <DropdownMenu.ItemIndicator className="ScreenityItemIndicator">
+                      <DropdownMenu.ItemIndicator className="CaptureItemIndicator">
                         <img src={CheckWhiteIcon} />
                       </DropdownMenu.ItemIndicator>
                     </DropdownMenu.RadioItem>
@@ -408,40 +408,40 @@ const SettingsMenu = (props) => {
                     }
                   >
                     <DropdownMenu.RadioItem
-                      className="ScreenityDropdownMenuItem"
+                      className="CaptureDropdownMenuItem"
                       value="720p"
                       disabled={RAM < 2 || width < 1280 || height < 720}
                     >
                       720p
-                      <DropdownMenu.ItemIndicator className="ScreenityItemIndicator">
+                      <DropdownMenu.ItemIndicator className="CaptureItemIndicator">
                         <img src={CheckWhiteIcon} />
                       </DropdownMenu.ItemIndicator>
                     </DropdownMenu.RadioItem>
                   </TooltipWrap>
                   <DropdownMenu.RadioItem
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     value="480p"
                   >
                     480p
-                    <DropdownMenu.ItemIndicator className="ScreenityItemIndicator">
+                    <DropdownMenu.ItemIndicator className="CaptureItemIndicator">
                       <img src={CheckWhiteIcon} />
                     </DropdownMenu.ItemIndicator>
                   </DropdownMenu.RadioItem>
                   <DropdownMenu.RadioItem
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     value="360p"
                   >
                     360p
-                    <DropdownMenu.ItemIndicator className="ScreenityItemIndicator">
+                    <DropdownMenu.ItemIndicator className="CaptureItemIndicator">
                       <img src={CheckWhiteIcon} />
                     </DropdownMenu.ItemIndicator>
                   </DropdownMenu.RadioItem>
                   <DropdownMenu.RadioItem
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     value="240p"
                   >
                     240p
-                    <DropdownMenu.ItemIndicator className="ScreenityItemIndicator">
+                    <DropdownMenu.ItemIndicator className="CaptureItemIndicator">
                       <img src={CheckWhiteIcon} />
                     </DropdownMenu.ItemIndicator>
                   </DropdownMenu.RadioItem>
@@ -470,7 +470,7 @@ const SettingsMenu = (props) => {
             </DropdownMenu.SubTrigger>
             <DropdownMenu.Portal>
               <DropdownMenu.SubContent
-                className="ScreenityDropdownMenuContent"
+                className="CaptureDropdownMenuContent"
                 sideOffset={0}
                 alignOffset={-3}
               >
@@ -487,59 +487,59 @@ const SettingsMenu = (props) => {
                   }}
                 >
                   <DropdownMenu.RadioItem
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     value="60"
                   >
                     60
-                    <DropdownMenu.ItemIndicator className="ScreenityItemIndicator">
+                    <DropdownMenu.ItemIndicator className="CaptureItemIndicator">
                       <img src={CheckWhiteIcon} />
                     </DropdownMenu.ItemIndicator>
                   </DropdownMenu.RadioItem>
                   <DropdownMenu.RadioItem
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     value="30"
                   >
                     30
-                    <DropdownMenu.ItemIndicator className="ScreenityItemIndicator">
+                    <DropdownMenu.ItemIndicator className="CaptureItemIndicator">
                       <img src={CheckWhiteIcon} />
                     </DropdownMenu.ItemIndicator>
                   </DropdownMenu.RadioItem>
                   <DropdownMenu.RadioItem
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     value="24"
                   >
                     24
-                    <DropdownMenu.ItemIndicator className="ScreenityItemIndicator">
+                    <DropdownMenu.ItemIndicator className="CaptureItemIndicator">
                       <img src={CheckWhiteIcon} />
                     </DropdownMenu.ItemIndicator>
                   </DropdownMenu.RadioItem>
                   <DropdownMenu.RadioItem
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     value="10"
                   >
                     10
-                    <DropdownMenu.ItemIndicator className="ScreenityItemIndicator">
+                    <DropdownMenu.ItemIndicator className="CaptureItemIndicator">
                       <img src={CheckWhiteIcon} />
                     </DropdownMenu.ItemIndicator>
                   </DropdownMenu.RadioItem>
                   <DropdownMenu.RadioItem
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     value="5"
                   >
                     5
-                    <DropdownMenu.ItemIndicator className="ScreenityItemIndicator">
+                    <DropdownMenu.ItemIndicator className="CaptureItemIndicator">
                       <img src={CheckWhiteIcon} />
                     </DropdownMenu.ItemIndicator>
                   </DropdownMenu.RadioItem>
                   <DropdownMenu.RadioItem
-                    className="ScreenityDropdownMenuItem"
+                    className="CaptureDropdownMenuItem"
                     value="1"
                   >
-                    <DropdownMenu.ItemIndicator className="ScreenityItemIndicator">
+                    <DropdownMenu.ItemIndicator className="CaptureItemIndicator">
                       <img src={CheckWhiteIcon} />
                     </DropdownMenu.ItemIndicator>
                     1
-                    <DropdownMenu.ItemIndicator className="ScreenityItemIndicator">
+                    <DropdownMenu.ItemIndicator className="CaptureItemIndicator">
                       <img src={CheckWhiteIcon} />
                     </DropdownMenu.ItemIndicator>
                   </DropdownMenu.RadioItem>
