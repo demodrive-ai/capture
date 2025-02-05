@@ -7,11 +7,14 @@ class CursorTracker {
     this.isTracking = false;
     this.lastPosition = { x: 0, y: 0 };
     this.lastTimestamp = 0;
-    this.throttleDelay = 16; // ~60fps tracking
+    this.throttleDelay = 16; // ~60fps tracking Here are the values to set for FPS 16->60 fps, 33 -> 30 fps, 50 -> 20 fps, 100 -> 10 fps
     this.lastMoveTime = 0;
-    this.batchSize = 50; // Reduced batch size for more frequent streaming
-    this.currentBatch = [];
+    this.batchSize = 50;
+    this.currentBatch = new Set(); // Use Set to prevent duplicates
     this.currentBatchIndex = 0;
+    this.sentBatches = new Set(); // Track sent batch IDs
+    this.streamingQueue = []; // Queue for batches waiting to be sent
+    this.isStreaming = false; // Flag to track if we're currently streaming
     
     // In-memory storage for better performance
     this.events = [];
@@ -70,8 +73,10 @@ class CursorTracker {
       this.isTracking = true;
       this.lastPosition = { x: 0, y: 0 };
       this.lastTimestamp = 0;
-      this.currentBatch = [];
+      this.currentBatch = new Set();
       this.currentBatchIndex = 0;
+      this.sentBatches = new Set();
+      this.streamingQueue = [];
       this.events = [];
       
       // Get initial tab info
@@ -133,12 +138,19 @@ class CursorTracker {
     try {
       console.log('[CursorTracker] Stopping tracking');
       this.isTracking = false;
-      this.detachEventListeners();
       
-      // Store any remaining events
-      if (this.currentBatch.length > 0) {
-        await this.storeBatch();
+      // Queue any remaining events
+      if (this.currentBatch.size > 0) {
+        await this.queueBatchForStreaming();
       }
+      
+      // Wait for all batches to be sent
+      while (this.streamingQueue.length > 0) {
+        await this.streamBatches();
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      this.detachEventListeners();
       
       // Get event counts for logging
       const eventCounts = this.events.reduce((acc, event) => {
@@ -149,14 +161,20 @@ class CursorTracker {
       console.log('[CursorTracker] Final event counts:', eventCounts);
       console.log(`[CursorTracker] Stopped tracking. Total events captured: ${this.events.length}`);
       
-      // Store all events in chrome.storage.local
+      // Clear tracking state
+      this.currentBatch.clear();
+      this.streamingQueue = [];
+      this.sentBatches.clear();
+      this.isStreaming = false;
+      
+      // Store final data
       await chrome.storage.local.set({
         cursorEvents: this.events,
         cursorEventCounts: eventCounts,
         totalCursorEvents: this.events.length
       });
       
-      // Send message about tracking completion
+      // Send completion message
       chrome.runtime.sendMessage({
         type: 'tracking-data',
         data: {
@@ -381,9 +399,13 @@ class CursorTracker {
     try {
       if (!this.isTracking) return;
       
+      // Generate a unique event ID using timestamp and event properties
+      const eventId = `${event.type}_${event.t || Date.now()}_${event.x || 0}_${event.y || 0}`;
+      
       // Enrich event with tab information
       const enrichedEvent = {
         ...event,
+        id: eventId,
         url: this.currentUrl,
         title: this.currentTitle,
         viewport: {
@@ -395,68 +417,94 @@ class CursorTracker {
         timestamp: Date.now()
       };
       
-      // Add to in-memory array
+      // Add to in-memory array and current batch
       this.events.push(enrichedEvent);
-      this.currentBatch.push(enrichedEvent);
+      this.currentBatch.add(enrichedEvent);
       
-      // Send event to background script immediately
-      chrome.runtime.sendMessage({
-        type: 'cursor-event',
-        data: enrichedEvent
-      });
-      
-      console.log(`[CursorTracker] Added ${event.type} event at (${event.x}, ${event.y}), total events: ${this.events.length}`);
-      
-      // When batch is full, store it
-      if (this.currentBatch.length >= this.batchSize) {
-        await this.storeBatch();
+      // When batch is full, queue it for streaming
+      if (this.currentBatch.size >= this.batchSize) {
+        await this.queueBatchForStreaming();
       }
     } catch (err) {
       console.error('[CursorTracker] Error adding cursor event:', err);
     }
   }
 
-  async storeBatch() {
-    if (this.currentBatch.length === 0) return;
+  async queueBatchForStreaming() {
+    if (this.currentBatch.size === 0) return;
+
+    // Convert Set to Array and create batch object
+    const batchEvents = Array.from(this.currentBatch);
+    const batchId = `${this.currentBatchIndex}_${Date.now()}`;
+    
+    const batch = {
+      id: batchId,
+      batchIndex: this.currentBatchIndex,
+      events: batchEvents,
+      timestamp: Date.now(),
+      totalEvents: this.events.length
+    };
+
+    // Add to queue and clear current batch
+    this.streamingQueue.push(batch);
+    this.currentBatch.clear();
+    this.currentBatchIndex++;
+
+    // Start streaming if not already streaming
+    if (!this.isStreaming) {
+      this.streamBatches();
+    }
+  }
+
+  async streamBatches() {
+    if (this.isStreaming || !this.isTracking) return;
+    
+    this.isStreaming = true;
     
     try {
-      // Store batch in chrome.storage.local
-      await chrome.storage.local.set({
-        [`cursor_batch_${this.currentBatchIndex}`]: this.currentBatch
-      });
-
-      // Stream to local FastAPI server
-      try {
-        const response = await fetch(this.streamEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            batchIndex: this.currentBatchIndex,
-            events: this.currentBatch,
-            timestamp: Date.now(),
-            totalEvents: this.events.length
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      while (this.streamingQueue.length > 0 && this.isTracking) {
+        const batch = this.streamingQueue.shift();
         
-        const result = await response.json();
-        console.log(`[CursorTracker] Successfully streamed batch ${this.currentBatchIndex} to server:`, result);
-      } catch (err) {
-        console.error('[CursorTracker] Error streaming batch to server:', err);
-        // Continue execution even if streaming fails
+        // Skip if this batch was already sent
+        if (this.sentBatches.has(batch.id)) {
+          continue;
+        }
+
+        try {
+          const response = await fetch(this.streamEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(batch)
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          // Mark batch as sent
+          this.sentBatches.add(batch.id);
+          
+          // Log success
+          console.log(`[CursorTracker] Successfully streamed batch ${batch.batchIndex} with ${batch.events.length} events`);
+          
+        } catch (err) {
+          console.error('[CursorTracker] Error streaming batch:', err);
+          // Put batch back in queue for retry
+          this.streamingQueue.unshift(batch);
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
+    } finally {
+      this.isStreaming = false;
       
-      console.log(`[CursorTracker] Stored batch ${this.currentBatchIndex} with ${this.currentBatch.length} events`);
-      this.currentBatchIndex++;
-      this.currentBatch = [];
-    } catch (err) {
-      console.error('[CursorTracker] Error storing cursor batch:', err);
+      // If there are still events in the current batch, queue them
+      if (this.currentBatch.size > 0) {
+        await this.queueBatchForStreaming();
+      }
     }
   }
 
@@ -472,8 +520,10 @@ class CursorTracker {
 
   async clearData() {
     this.events = [];
-    this.currentBatch = [];
+    this.currentBatch = new Set();
     this.currentBatchIndex = 0;
+    this.sentBatches = new Set();
+    this.streamingQueue = [];
     // Clear from chrome.storage.local
     const keys = ['cursorEvents', 'cursorEventCounts', 'totalCursorEvents'];
     await chrome.storage.local.remove(keys);

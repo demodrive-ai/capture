@@ -67,7 +67,7 @@ const Sandbox = () => {
 
     const elements = parentDiv.querySelectorAll("*");
     elements.forEach((element) => {
-      element.classList.add("screenity-scrollbar");
+      element.classList.add("capture-scrollbar");
     });
 
     const observer = new MutationObserver((mutationsList) => {
@@ -78,13 +78,13 @@ const Sandbox = () => {
 
           addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
-              node.classList.add("screenity-scrollbar");
+              node.classList.add("capture-scrollbar");
             }
           });
 
           removedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
-              node.classList.remove("screenity-scrollbar");
+              node.classList.remove("capture-scrollbar");
             }
           });
         }
@@ -254,24 +254,24 @@ const Sandbox = () => {
 					}
 
 
-.screenity-scrollbar *::-webkit-scrollbar, .screenity-scrollbar::-webkit-scrollbar {
+.capture-scrollbar *::-webkit-scrollbar, .capture-scrollbar::-webkit-scrollbar {
   background-color: rgba(0,0,0,0);
   width: 16px;
   height: 16px;
   z-index: 999999;
 }
-.screenity-scrollbar *::-webkit-scrollbar-track, .screenity-scrollbar::-webkit-scrollbar-track {
+.capture-scrollbar *::-webkit-scrollbar-track, .capture-scrollbar::-webkit-scrollbar-track {
   background-color: rgba(0,0,0,0);
 }
-.screenity-scrollbar *::-webkit-scrollbar-thumb, .screenity-scrollbar::-webkit-scrollbar-thumb {
+.capture-scrollbar *::-webkit-scrollbar-thumb, .capture-scrollbar::-webkit-scrollbar-thumb {
   background-color: rgba(0,0,0,0);
   border-radius:16px;
   border:0px solid #fff;
 }
-.screenity-scrollbar *::-webkit-scrollbar-button, .screenity-scrollbar::-webkit-scrollbar-button {
+.capture-scrollbar *::-webkit-scrollbar-button, .capture-scrollbar::-webkit-scrollbar-button {
   display:none;
 }
-.screenity-scrollbar *:hover::-webkit-scrollbar-thumb, .screenity-scrollbar:hover::-webkit-scrollbar-thumb {
+.capture-scrollbar *:hover::-webkit-scrollbar-thumb, .capture-scrollbar:hover::-webkit-scrollbar-thumb {
   background-color: #a0a0a5;
   border:4px solid #fff;
 }
@@ -297,6 +297,13 @@ const Sandbox = () => {
 	gap: 6px!important;
 }
 					
+					body {
+						background-image: linear-gradient(135deg, rgba(107, 107, 107,0.06) 0%, rgba(107, 107, 107,0.06) 50%,rgba(202, 202, 202,0.06) 50%, rgba(202, 202, 202,0.06) 100%),linear-gradient(90deg, rgb(20,20,20),rgb(20,20,20));
+						background-size: 30px 30px;
+						margin: 0;
+						padding: 0;
+						min-height: 100%;
+					}
 					`}
       </style>
     </div>

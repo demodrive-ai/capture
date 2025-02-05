@@ -4,7 +4,7 @@ import localforage from "localforage";
 
 localforage.config({
   driver: localforage.INDEXEDDB,
-  name: "screenity",
+  name: "capture",
   version: 1,
 });
 
@@ -57,7 +57,7 @@ const Backup = () => {
   const initLocalDirectory = async (directoryHandle, prompt = true) => {
     const permissions = await verifyFilePermissions(directoryHandle);
     if (permissions) {
-      let videoTitle = `Screenity video - ${new Date().toLocaleString("en-US", {
+      let videoTitle = `Capture video - ${new Date().toLocaleString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -96,7 +96,7 @@ const Backup = () => {
       localSaving(prompt);
     } else {
       alert(
-        "Failed to set up local backup. Reach out to us at support@screenity.io for more help. You can still record your screen."
+        "Failed to set up local backup. Reach out to us at support@capture.io for more help. You can still record your screen."
       );
       chrome.storage.local.set({ backup: false });
       chrome.runtime.sendMessage({
@@ -142,14 +142,14 @@ const Backup = () => {
 
     let directoryHandle = directoryPicker;
 
-    // Check if the selected directory is the "Screenity recordings" folder
-    if (directoryPicker.name === "Screenity Recordings") {
+    // Check if the selected directory is the "Capture recordings" folder
+    if (directoryPicker.name === "Capture Recordings") {
       // Use the selected directory directly
       directoryHandle = directoryPicker;
     } else {
-      // If not, create the "Screenity recordings" folder within it
+      // If not, create the "Capture recordings" folder within it
       directoryHandle = await directoryPicker.getDirectoryHandle(
-        "Screenity Recordings",
+        "Capture Recordings",
         { create: true }
       );
     }
@@ -196,7 +196,7 @@ const Backup = () => {
       });
     } else {
       alert(
-        "Your browser doesn't support local backups. Reach out to us at support@screenity.io for more help. You can still record your screen."
+        "Your browser doesn't support local backups. Reach out to us at support@capture.io for more help. You can still record your screen."
       );
       chrome.storage.local.set({ backup: false });
       chrome.runtime.sendMessage({
@@ -369,7 +369,7 @@ const Backup = () => {
               <br />
               {chrome.i18n.getMessage("backupsDescription2")}{" "}
               <a
-                href="https://help.screenity.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-backups-how-can-i-set-them-up/waYArvSwybZkJKKDdMXw1o"
+                href="https://help.capture.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-backups-how-can-i-set-them-up/waYArvSwybZkJKKDdMXw1o"
                 target="_blank"
               >
                 {chrome.i18n.getMessage("learnMoreDot")}
@@ -436,7 +436,7 @@ const Backup = () => {
             <div className="subtitle">
               {chrome.i18n.getMessage("backupsConfirmDescription")}{" "}
               <a
-                href="https://help.screenity.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-backups-how-can-i-set-them-up/waYArvSwybZkJKKDdMXw1o"
+                href="https://help.capture.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-backups-how-can-i-set-them-up/waYArvSwybZkJKKDdMXw1o"
                 target="_blank"
               >
                 {chrome.i18n.getMessage("learnMoreDot")}
@@ -469,18 +469,11 @@ const Backup = () => {
       <style>
         {`
 				body {
-					overflow: hidden;
-					margin: 0px;
+					background-image: linear-gradient(135deg, rgba(107, 107, 107,0.06) 0%, rgba(107, 107, 107,0.06) 50%,rgba(202, 202, 202,0.06) 50%, rgba(202, 202, 202,0.06) 100%),linear-gradient(90deg, rgb(20,20,20),rgb(20,20,20));
+					background-size: 30px 30px;
 					margin: 0;
-	padding: 0;
-	min-height: 100%;
-		background-color: #F6F7FB!important;
-		background: url('` +
-          chrome.runtime.getURL("assets/helper/pattern-svg.svg") +
-          `') repeat;
-		background-size: 62px 23.5px;
-		animation: moveBackground 138s linear infinite;
-		transform: rotate(0deg);
+					padding: 0;
+					min-height: 100%;
 				}
 
 				.button-strong {

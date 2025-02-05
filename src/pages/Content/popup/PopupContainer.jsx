@@ -50,7 +50,7 @@ const PopupContainer = (props) => {
   const recordTabRef = useRef(null);
   const videoTabRef = useRef(null);
   const pillRef = useRef(null);
-  const [URL, setURL] = useState("https://help.screenity.io/");
+  const [URL, setURL] = useState("https://help.capture.io/");
 
   useEffect(() => {
     // Check chrome storage
@@ -65,7 +65,7 @@ const PopupContainer = (props) => {
     const locale = chrome.i18n.getMessage("@@ui_locale");
     if (!locale.includes("en")) {
       setURL(
-        `https://translate.google.com/translate?sl=en&tl=${locale}&u=https://help.screenity.io/`
+        `https://translate.google.com/translate?sl=en&tl=${locale}&u=https://help.capture.io/`
       );
     }
   }, []);
@@ -412,3 +412,224 @@ const PopupContainer = (props) => {
 };
 
 export default PopupContainer;
+
+<style>
+{`
+.popup-container {
+  background-color: hsl(240 10% 3.9%);
+  border: 1px solid hsl(240 3.7% 15.9%);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  color: hsl(0 0% 98%);
+  font-family: var(--font-sans);
+  overflow: hidden;
+  width: 360px;
+}
+
+.popup-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: hsl(240 6% 10%);
+  border-bottom: 1px solid hsl(240 3.7% 15.9%);
+}
+
+.popup-cutout {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+  background-color: hsl(240 6% 10%);
+}
+
+.popup-cutout img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.TabsRoot {
+  display: flex;
+  flex-direction: column;
+}
+
+.TabsList {
+  display: flex;
+  border-bottom: 1px solid hsl(240 3.7% 15.9%);
+  padding: 0 16px;
+}
+
+.TabsTrigger {
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: hsl(240 5% 64.9%);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.TabsTrigger[data-state="active"] {
+  color: hsl(0 0% 98%);
+  border-bottom: 2px solid hsl(217.2 91.2% 59.8%);
+}
+
+.TabsTrigger:hover {
+  color: hsl(0 0% 98%);
+}
+
+.TabsTriggerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.TabsContent {
+  padding: 16px;
+  background-color: hsl(240 10% 3.9%);
+}
+
+.permission-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  width: 100%;
+  background-color: hsl(240 3.7% 15.9%);
+  border: 1px solid hsl(240 5% 26%);
+  border-radius: 6px;
+  color: hsl(0 0% 98%);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+}
+
+.permission-button:hover {
+  background-color: hsl(240 5% 26%);
+}
+
+.main-button {
+  width: 100%;
+  padding: 12px;
+  background-color: hsl(217.2 91.2% 59.8%);
+  border: none;
+  border-radius: 6px;
+  color: hsl(0 0% 98%);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.main-button:hover {
+  background-color: hsl(217.2 91.2% 69.8%);
+}
+
+.main-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.popup-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background-color: hsl(240 6% 10%);
+  border: 1px solid hsl(240 5% 26%);
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.popup-warning-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: hsl(0 0% 98%);
+  margin-bottom: 4px;
+}
+
+.popup-warning-description {
+  font-size: 12px;
+  color: hsl(240 5% 64.9%);
+}
+
+.popup-warning a {
+  color: hsl(217.2 91.2% 59.8%);
+  text-decoration: none;
+  font-size: 12px;
+  transition: color 0.2s ease;
+}
+
+.popup-warning a:hover {
+  color: hsl(217.2 91.2% 69.8%);
+}
+
+.CollapsibleRoot {
+  margin-top: 16px;
+}
+
+.CollapsibleTrigger {
+  width: 100%;
+  padding: 12px;
+  background-color: hsl(240 3.7% 15.9%);
+  border: 1px solid hsl(240 5% 26%);
+  border-radius: 6px;
+  color: hsl(0 0% 98%);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.CollapsibleTrigger:hover {
+  background-color: hsl(240 5% 26%);
+}
+
+.CollapsibleContent {
+  padding: 12px 0;
+}
+
+.DropdownMenuItem {
+  padding: 8px 12px;
+  background-color: transparent;
+  border: none;
+  color: hsl(0 0% 98%);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.DropdownMenuItem:hover {
+  background-color: hsl(240 5% 26%);
+}
+
+.DropdownMenuItem[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ItemIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+`}
+</style>

@@ -9,7 +9,7 @@ class MetadataTracker {
     
     // Store for recording metadata
     this.metadataStore = localforage.createInstance({
-      name: "screenity_metadata",
+      name: "capture_metadata",
       storeName: 'recording_metadata'
     });
   }

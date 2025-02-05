@@ -1,10 +1,10 @@
-# Screenity Cursor Tracking Server
+# Capture Cursor Tracking Server
 
-A FastAPI-based server that receives and stores cursor tracking data from the Screenity Chrome extension in real-time.
+A FastAPI-based server that receives and stores cursor tracking data from the Capture Chrome extension in real-time.
 
 ## Overview
 
-This server acts as a real-time data collection endpoint for cursor movements, clicks, and other interaction events captured during Screenity screen recordings. It provides:
+This server acts as a real-time data collection endpoint for cursor movements, clicks, and other interaction events captured during Capture screen recordings. It provides:
 
 - Real-time event streaming endpoint
 - Periodic data persistence
@@ -47,7 +47,7 @@ The server will start on `http://localhost:8000`.
 ### Available Endpoints
 
 1. **POST `/streaming-events`**
-   - Receives cursor tracking events from the Screenity extension
+   - Receives cursor tracking events from the Capture extension
    - Accepts JSON data with batch information
    - Example request body:
    ```json
@@ -144,9 +144,9 @@ Event files are saved with the following structure:
 }
 ```
 
-## Integration with Screenity
+## Integration with Capture
 
-This server is designed to work with the Screenity Chrome extension's cursor tracking feature. The extension automatically streams cursor events to this server when recording is active.
+This server is designed to work with the Capture Chrome extension's cursor tracking feature. The extension automatically streams cursor events to this server when recording is active.
 
 ### Configuration
 
@@ -213,4 +213,4 @@ For large datasets:
 
 ## License
 
-This project is part of Screenity and follows its licensing terms.
+This project is part of Capture and follows its licensing terms.

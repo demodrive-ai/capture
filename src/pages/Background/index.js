@@ -13,7 +13,7 @@ import * as cursorTrackingManager from './modules/cursorTrackingManager';
 
 localforage.config({
   driver: localforage.INDEXEDDB,
-  name: "screenity",
+  name: "capture",
   version: 1,
 });
 
@@ -1658,7 +1658,7 @@ const handleExportTrackingData = async (request) => {
     const url = URL.createObjectURL(blob);
     
     // Trigger download
-    const filename = `screenity-tracking-data-${new Date().toISOString()}.json`;
+    const filename = `capture-tracking-data-${new Date().toISOString()}.json`;
     await chrome.downloads.download({
       url: url,
       filename: filename,
@@ -1724,9 +1724,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     handleRecordingComplete();
   } else if (request.type === "check-recording") {
     checkRecording();
-  } else if (request.type === "review-screenity") {
+  } else if (request.type === "review-capture") {
     createTab(
-      "https://chrome.google.com/webstore/detail/screenity-screen-recorder/kbbdabhdfibnancpjfhlkhafgdilcnji/reviews",
+      "https://chrome.google.com/webstore/detail/capture-screen-recorder/kbbdabhdfibnancpjfhlkhafgdilcnji/reviews",
       false,
       true
     );
@@ -1734,19 +1734,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     createTab("https://alyssax.substack.com/", false, true);
   } else if (request.type === "open-processing-info") {
     createTab(
-      "https://help.screenity.io/editing-and-exporting/dJRFpGq56JFKC7k8zEvsqb/why-is-there-a-5-minute-limit-for-editing/ddy4e4TpbnrFJ8VoRT37tQ",
+      "https://help.capture.io/editing-and-exporting/dJRFpGq56JFKC7k8zEvsqb/why-is-there-a-5-minute-limit-for-editing/ddy4e4TpbnrFJ8VoRT37tQ",
       true,
       true
     );
   } else if (request.type === "upgrade-info") {
     createTab(
-      "https://help.screenity.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-the-technical-requirements-for-using-screenity/6kdB6qru6naVD8ZLFvX3m9",
+      "https://help.capture.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-the-technical-requirements-for-using-capture/6kdB6qru6naVD8ZLFvX3m9",
       true,
       true
     );
   } else if (request.type === "trim-info") {
     createTab(
-      "https://help.screenity.io/editing-and-exporting/dJRFpGq56JFKC7k8zEvsqb/how-to-cut-trim-or-mute-parts-of-your-video/svNbM7YHYY717MuSWXrKXH",
+      "https://help.capture.io/editing-and-exporting/dJRFpGq56JFKC7k8zEvsqb/how-to-cut-trim-or-mute-parts-of-your-video/svNbM7YHYY717MuSWXrKXH",
       true,
       true
     );
@@ -1754,7 +1754,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     createTab("https://tally.so/r/npojNV", true, true);
   } else if (request.type === "chrome-update-info") {
     createTab(
-      "https://help.screenity.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-the-technical-requirements-for-using-screenity/6kdB6qru6naVD8ZLFvX3m9",
+      "https://help.capture.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-the-technical-requirements-for-using-capture/6kdB6qru6naVD8ZLFvX3m9",
       true,
       true
     );
@@ -1769,15 +1769,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.type === "sign-out-drive") {
     handleSignOutDrive();
   } else if (request.type === "open-help") {
-    createTab("https://help.screenity.io/", true, true);
+    createTab("https://help.capture.io/", true, true);
   } else if (request.type === "memory-limit-help") {
     createTab(
-      "https://help.screenity.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/what-does-%E2%80%9Cmemory-limit-reached%E2%80%9D-mean-when-recording/8WkwHbt3puuXunYqQnyPcb",
+      "https://help.capture.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/what-does-%E2%80%9Cmemory-limit-reached%E2%80%9D-mean-when-recording/8WkwHbt3puuXunYqQnyPcb",
       true,
       true
     );
   } else if (request.type === "open-home") {
-    createTab("https://screenity.io/", false, true);
+    createTab("https://capture.io/", false, true);
   } else if (request.type === "report-bug") {
     createTab(
       "https://tally.so/r/3ElpXq?version=" +

@@ -16,10 +16,10 @@ const RecordingType = (props) => {
   const [cropActive, setCropActive] = useState(false);
   const [time, setTime] = useState(0);
   const [URL, setURL] = useState(
-    "https://help.screenity.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-the-technical-requirements-for-using-screenity/6kdB6qru6naVD8ZLFvX3m9"
+    "https://help.capture.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-the-technical-requirements-for-using-capture/6kdB6qru6naVD8ZLFvX3m9"
   );
   const [URL2, setURL2] = useState(
-    "https://help.screenity.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/how-to-grant-screenity-permission-to-record-your-camera-and-microphone/x6U69TnrbMjy5CQ96Er2E9"
+    "https://help.capture.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/how-to-grant-capture-permission-to-record-your-camera-and-microphone/x6U69TnrbMjy5CQ96Er2E9"
   );
 
   const buttonRef = useRef(null);
@@ -29,10 +29,10 @@ const RecordingType = (props) => {
     const locale = chrome.i18n.getMessage("@@ui_locale");
     if (!locale.includes("en")) {
       setURL(
-        `https://translate.google.com/translate?sl=en&tl=${locale}&u=https://help.screenity.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-the-technical-requirements-for-using-screenity/6kdB6qru6naVD8ZLFvX3m9`
+        `https://translate.google.com/translate?sl=en&tl=${locale}&u=https://help.capture.io/getting-started/77KizPC8MHVGfpKpqdux9D/what-are-the-technical-requirements-for-using-capture/6kdB6qru6naVD8ZLFvX3m9`
       );
       setURL2(
-        `https://translate.google.com/translate?sl=en&tl=${locale}&u=https://help.screenity.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/how-to-grant-screenity-permission-to-record-your-camera-and-microphone/x6U69TnrbMjy5CQ96Er2E9`
+        `https://translate.google.com/translate?sl=en&tl=${locale}&u=https://help.capture.io/troubleshooting/9Jy5RGjNrBB42hqUdREQ7W/how-to-grant-capture-permission-to-record-your-camera-and-microphone/x6U69TnrbMjy5CQ96Er2E9`
       );
     }
   }, []);
@@ -304,3 +304,138 @@ const RecordingType = (props) => {
 };
 
 export default RecordingType;
+
+<style>
+{`
+.recording-type-container {
+  padding: 16px;
+}
+
+.recording-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recording-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: hsl(240 3.7% 15.9%);
+  border: 1px solid hsl(240 5% 26%);
+  border-radius: 6px;
+  color: hsl(0 0% 98%);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recording-option:hover {
+  background-color: hsl(240 5% 26%);
+}
+
+.recording-option.active {
+  border-color: hsl(217.2 91.2% 59.8%);
+}
+
+.recording-option-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.recording-option-icon img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.9;
+}
+
+.recording-settings {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid hsl(240 3.7% 15.9%);
+}
+
+.recording-settings-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: hsl(0 0% 98%);
+  margin-bottom: 12px;
+}
+
+.recording-settings-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.recording-settings-option-label {
+  font-size: 14px;
+  color: hsl(240 5% 64.9%);
+}
+
+.recording-button {
+  margin-top: 16px;
+  width: 100%;
+  padding: 12px;
+  background-color: hsl(217.2 91.2% 59.8%);
+  border: none;
+  border-radius: 6px;
+  color: hsl(0 0% 98%);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.recording-button:hover {
+  background-color: hsl(217.2 91.2% 69.8%);
+}
+
+.recording-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.recording-button-shortcut {
+  padding: 2px 6px;
+  background-color: hsl(240 5% 26%);
+  border-radius: 4px;
+  font-size: 12px;
+  color: hsl(240 5% 64.9%);
+}
+
+.alarm-time-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background-color: hsl(240 5% 26%);
+  border-radius: 4px;
+  font-size: 12px;
+  color: hsl(240 5% 64.9%);
+}
+
+.popup-content-divider {
+  height: 1px;
+  background-color: hsl(240 3.7% 15.9%);
+  margin: 16px 0;
+}
+
+.waveform-container {
+  margin: 12px 0;
+  padding: 12px;
+  background-color: hsl(240 3.7% 15.9%);
+  border-radius: 6px;
+  height: 30px;
+}
+`}
+</style>

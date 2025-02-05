@@ -4,7 +4,7 @@ const Recorder = () => {
   useEffect(() => {
     window.parent.postMessage(
       {
-        type: "screenity-permissions-loaded",
+        type: "capture-permissions-loaded",
       },
       "*"
     );
@@ -41,7 +41,7 @@ const Recorder = () => {
         // Post message to parent window
         window.parent.postMessage(
           {
-            type: "screenity-permissions",
+            type: "capture-permissions",
             success: false,
             error: err.name,
           },
@@ -109,7 +109,7 @@ const Recorder = () => {
       // Post message to parent window
       window.parent.postMessage(
         {
-          type: "screenity-permissions",
+          type: "capture-permissions",
           success: true,
           audioinput: audioinput,
           audiooutput: audiooutput,
@@ -130,7 +130,7 @@ const Recorder = () => {
       // Post message to parent window
       window.parent.postMessage(
         {
-          type: "screenity-permissions",
+          type: "capture-permissions",
           success: false,
           error: err.name,
         },
@@ -141,7 +141,7 @@ const Recorder = () => {
   };
 
   const onMessage = (message) => {
-    if (message.type === "screenity-get-permissions") {
+    if (message.type === "capture-get-permissions") {
       checkPermissions();
     }
   };

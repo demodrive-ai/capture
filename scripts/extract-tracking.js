@@ -38,7 +38,7 @@ async function extractTrackingData() {
       console.log('Received data from stdout, length:', data.length);
       
       const timestamp = new Date().toISOString();
-      const filename = `screenity-tracking-data-${timestamp}.json`;
+      const filename = `capture-tracking-data-${timestamp}.json`;
       
       console.log('Writing data to file:', filename);
       fs.writeFileSync(filename, data);

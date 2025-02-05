@@ -8,12 +8,12 @@ import ContentState from "./context/ContentState";
 
 const Content = () => {
   return (
-    <div className="screenity-shadow-dom">
+    <div className="capture-shadow-dom">
       <ContentState>
         <Wrapper />
       </ContentState>
       <style type="text/css">{`
-			#screenity-ui, #screenity-ui div {
+			#capture-ui, #capture-ui div {
 				background-color: unset;
 				padding: unset;
 				width: unset;
@@ -22,7 +22,7 @@ const Content = () => {
 				margin: unset;
 				border-radius: unset;
 			}
-			.screenity-outline {
+			.capture-outline {
 				position: absolute;
 				z-index: 99999999999;
 				border: 2px solid #3080F8;
@@ -30,13 +30,13 @@ const Content = () => {
 				pointer-events: none;
 				border-radius: 5px!important;
 			}
-		.screenity-blur {
+		.capture-blur {
 			filter: blur(10px)!important;
 		}
-			.screenity-shadow-dom * {
+			.capture-shadow-dom * {
 				transition: unset;
 			}
-			.screenity-shadow-dom .TooltipContent {
+			.capture-shadow-dom .TooltipContent {
   border-radius: 30px!important;
 	background-color: #29292F!important;
   padding: 10px 15px!important;
@@ -56,28 +56,28 @@ const Content = () => {
   will-change: transform, opacity;
 }
 
-.screenity-shadow-dom .hide-tooltip {
+.capture-shadow-dom .hide-tooltip {
 	display: none!important;
 }
 
-.screenity-shadow-dom .tooltip-tall {
+.capture-shadow-dom .tooltip-tall {
 	margin-bottom: 20px;
 }
 
-.screenity-shadow-dom .tooltip-small {
+.capture-shadow-dom .tooltip-small {
 	margin-bottom: 5px;
 }
 
-.screenity-shadow-dom .TooltipContent[data-state='delayed-open'][data-side='top'] {
+.capture-shadow-dom .TooltipContent[data-state='delayed-open'][data-side='top'] {
 	animation-name: slideDownAndFade;
 }
-.screenity-shadow-dom .TooltipContent[data-state='delayed-open'][data-side='right'] {
+.capture-shadow-dom .TooltipContent[data-state='delayed-open'][data-side='right'] {
   animation-name: slideLeftAndFade;
 }
-.screenity-shadow-dom.TooltipContent[data-state='delayed-open'][data-side='bottom'] {
+.capture-shadow-dom.TooltipContent[data-state='delayed-open'][data-side='bottom'] {
   animation-name: slideUpAndFade;
 }
-.screenity-shadow-dom.TooltipContent[data-state='delayed-open'][data-side='left'] {
+.capture-shadow-dom.TooltipContent[data-state='delayed-open'][data-side='left'] {
   animation-name: slideRightAndFade;
 }
 
@@ -125,23 +125,23 @@ const Content = () => {
   }
 }
 
-#screenity-ui [data-radix-popper-content-wrapper] { z-index: 999999999999!important; } 
+#capture-ui [data-radix-popper-content-wrapper] { z-index: 999999999999!important; } 
 
-.screenity-shadow-dom .CanvasContainer {
+.capture-shadow-dom .CanvasContainer {
 	position: fixed;
 	pointer-events: all!important;
 	top: 0px!important;
 	left: 0px!important;
 	z-index: 99999999999!important;
 }
-.screenity-shadow-dom .canvas {
+.capture-shadow-dom .canvas {
 	position: fixed;
 	top: 0px!important;
 	left: 0px!important;
 	z-index: 99999999999!important;
 	background: transparent!important;
 }
-.screenity-shadow-dom .canvas-container {
+.capture-shadow-dom .canvas-container {
 	top: 0px!important;
 	left: 0px!important;
 	z-index: 99999999999;
@@ -149,7 +149,7 @@ const Content = () => {
 	background: transparent!important;
 }
 
-.ScreenityDropdownMenuContent {
+.CaptureDropdownMenuContent {
 	z-index: 99999999999!important;
   min-width: 200px;
   background-color: white;
@@ -167,19 +167,19 @@ const Content = () => {
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
-.ScreenityDropdownMenuContent[data-side="top"] {
+.CaptureDropdownMenuContent[data-side="top"] {
   animation-name: slideDownAndFade;
 }
-.ScreenityDropdownMenuContent[data-side="right"] {
+.CaptureDropdownMenuContent[data-side="right"] {
   animation-name: slideLeftAndFade;
 }
-.ScreenityDropdownMenuContent[data-side="bottom"] {
+.CaptureDropdownMenuContent[data-side="bottom"] {
   animation-name: slideUpAndFade;
 }
-.ScreenityDropdownMenuContent[data-side="left"] {
+.CaptureDropdownMenuContent[data-side="left"] {
   animation-name: slideRightAndFade;
 }
-.ScreenityItemIndicator {
+.CaptureItemIndicator {
   position: absolute;
   right: 12px; 
   width: 18px;
@@ -190,8 +190,8 @@ const Content = () => {
   align-items: center;
   justify-content: center;
 }
-.ScreenityDropdownMenuItem,
-.ScreenityDropdownMenuRadioItem {
+.CaptureDropdownMenuItem,
+.CaptureDropdownMenuRadioItem {
   font-size: 14px;
   line-height: 1;
   display: flex;
@@ -204,11 +204,11 @@ const Content = () => {
   user-select: none;
   outline: none;
 }
-.ScreenityDropdownMenuItem:hover {
+.CaptureDropdownMenuItem:hover {
     background-color: #F6F7FB !important;
     cursor: pointer;
 }
-.ScreenityDropdownMenuItem[data-disabled] {
+.CaptureDropdownMenuItem[data-disabled] {
   color: #6E7684; !important;
   cursor: not-allowed;
   background-color: #F6F7FB !important;

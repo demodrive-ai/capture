@@ -7,7 +7,7 @@ import CursorTracker from '../Content/trackers/CursorTracker';
 
 localforage.config({
   driver: localforage.INDEXEDDB, // or choose another driver
-  name: "screenity", // optional
+  name: "capture", // optional
   version: 1, // optional
 });
 
@@ -584,9 +584,9 @@ const Recorder = () => {
       if (data.recordingType === "camera") {
         startStream(data, null, null, permissions, permissions2);
       } else if (!isTab.current) {
-        let captureTypes = ["screen", "window", "tab", "audio"];
+        let captureTypes = ["window", "audio"];
         if (tabPreferred.current) {
-          captureTypes = ["tab", "screen", "window", "audio"];
+          captureTypes = ["window", "audio"];
         }
         chrome.desktopCapture.chooseDesktopMedia(
           captureTypes,
@@ -726,7 +726,7 @@ const Recorder = () => {
       // Create download link
       const a = document.createElement('a');
       a.href = url;
-      a.download = `screenity-tracking-data-${new Date().toISOString()}.json`;
+      a.download = `capture-tracking-data-${new Date().toISOString()}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -826,22 +826,106 @@ const Recorder = () => {
       <style>
         {`
 				body {
-					overflow: hidden;
+					background-color: hsl(240 10% 3.9%);
+					color: hsl(0 0% 98%);
+					font-family: system-ui, -apple-system, sans-serif;
+					margin: 0;
+					padding: 0;
+					min-height: 100%;
 				}
 				.button-stop {
 					padding: 10px 20px;
-					background: #FFF;
-					border-radius: 30px;
-					color: #29292F;
+					background-color: hsl(240 3.7% 15.9%);
+					border: 1px solid hsl(240 5% 26%);
+					border-radius: 6px;
+					color: hsl(0 0% 98%);
 					font-size: 14px;
 					font-weight: 500;
 					cursor: pointer;
-					margin-top: 0px;
-					border: 1px solid #E8E8E8;
-					margin-left: auto;
-					margin-right: auto;
+					transition: all 0.2s ease;
+					margin: 0 auto;
 					z-index: 999999;
 				}
+
+				.button-stop:hover {
+					background-color: hsl(240 5% 26%);
+				}
+
+				.button-export {
+					padding: 10px 20px;
+					background-color: hsl(217.2 91.2% 59.8%);
+					border: none;
+					border-radius: 6px;
+					color: hsl(0 0% 98%);
+					font-size: 14px;
+					font-weight: 500;
+					cursor: pointer;
+					transition: all 0.2s ease;
+					margin: 10px auto;
+					z-index: 999999;
+				}
+
+				.button-export:hover {
+					background-color: hsl(217.2 91.2% 69.8%);
+				}
+				
+				.logo {
+					position: absolute;
+					bottom: 24px;
+					left: 0;
+					right: 0;
+					margin: auto;
+					width: 120px;
+					opacity: 0.9;
+				}
+
+				.wrap {
+					position: absolute;
+					top: 0;
+					left: 0;
+					width: 100%;
+					height: 100%;
+					background: linear-gradient(
+						to bottom right,
+						hsl(240 10% 3.9%),
+						hsl(240 3.7% 15.9%)
+					);
+				}
+
+				.middle-area {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					justify-content: center;
+					height: 100%;
+					font-family: system-ui, -apple-system, sans-serif;
+				}
+
+				.middle-area img {
+					width: 40px;
+					margin-bottom: 20px;
+					opacity: 0.9;
+				}
+
+				.title {
+					font-size: 24px;
+					font-weight: 600;
+					color: hsl(0 0% 98%);
+					margin-bottom: 14px;
+					letter-spacing: -0.025em;
+					text-align: center;
+				}
+
+				.subtitle {
+					font-size: 14px;
+					font-weight: 400;
+					color: hsl(240 5% 64.9%);
+					margin-bottom: 24px;
+					text-align: center;
+					max-width: 500px;
+					line-height: 1.6;
+				}
+				
 				.setupBackgroundSVG {
 					position: absolute;
 					top: 0px;
@@ -864,50 +948,7 @@ const Recorder = () => {
 						background-position: 100% 0;
 					}
 				}
-				.logo {
-					position: absolute;
-					bottom: 30px;
-					left: 0px;
-					right: 0px;
-					margin: auto;
-					width: 120px;
-				}
-				.wrap {
-					position: absolute;
-					top: 0;
-					left: 0;
-					width: 100%;
-					height: 100%;
-					background-color: #F6F7FB;
-				}
-					.middle-area {
-						display: flex;
-						flex-direction: column;
-						align-items: center;
-						justify-content: center;
-						height: 100%;
-						font-family: "Satoshi Medium", sans-serif;
-					}
-					.middle-area img {
-						width: 40px;
-						margin-bottom: 20px;
-					}
-					.title {
-						font-size: 24px;
-						font-weight: 700;
-						color: #1A1A1A;
-						margin-bottom: 14px;
-						font-family: Satoshi-Medium, sans-serif;
-					}
-					.subtitle {
-						font-size: 14px;
-						font-weight: 400;
-						color: #6E7684;
-						margin-bottom: 24px;
-						font-family: Satoshi-Medium, sans-serif;
-					}
-					
-					`}
+				`}
       </style>
     </div>
   );

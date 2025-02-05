@@ -5,7 +5,7 @@ import CursorTracker from '../Content/trackers/CursorTracker';
 
 localforage.config({
   driver: localforage.INDEXEDDB, // or choose another driver
-  name: "screenity", // optional
+  name: "capture", // optional
   version: 1, // optional
 });
 
@@ -495,7 +495,8 @@ const RecorderOffscreen = () => {
             audio: data.systemAudio,
             video: {
               frameRate: 30,
-              displaySurface: "monitor",
+              displaySurface: "window",
+              surfaceType: "window"
             },
             selfBrowserSurface: "exclude",
             systemAudio: "include",

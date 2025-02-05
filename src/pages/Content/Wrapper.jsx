@@ -67,7 +67,7 @@ const Wrapper = () => {
 
     permissionsRef.current.contentWindow.postMessage(
       {
-        type: "screenity-get-permissions",
+        type: "capture-get-permissions",
       },
       "*"
     );
@@ -161,7 +161,7 @@ const Wrapper = () => {
           <CursorModes />
           <root.div
             className="root-container"
-            id="screenity-root-container"
+            id="capture-root-container"
             style={{
               // all: "initial",
               display: "block",
